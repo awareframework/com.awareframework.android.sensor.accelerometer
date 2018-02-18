@@ -47,8 +47,24 @@ class AccelerometerSensor : Service(), SensorEventListener {
     private val dataBuffer = ArrayList<AccelerometerEvent>()
 
     // Parameters of the sensor
-    private var frequency = -1
+    /**
+     * Accelerometer frequency in microseconds: e.g.,
+     * 0 - fastest
+     * 20000 - game
+     * 60000 - UI
+     * 200000 - normal (default)
+     */
+    private var frequency = 200000
+
+    /**
+     * Accelerometer threshold (float).  Do not record consecutive points if
+     * change in value of all axes is less than this.
+     */
     private var threshold = 0.0
+
+    /**
+     * Discard sensor events that come in more often than frequency
+     */
     private var enforceFrequency = false
     private var debugDbSlow = false
     private var sensorObserver: AWARESensorObserver? = null
