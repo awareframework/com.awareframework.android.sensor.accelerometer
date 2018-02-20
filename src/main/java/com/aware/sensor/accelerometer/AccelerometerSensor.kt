@@ -27,12 +27,6 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
     val TAG = "com.aware.sensor.aclm"
 
-//    open class Builder {
-//        constructor() {
-//
-//        }
-//    }
-
     private var mSensorManager: SensorManager? = null
     private var mAccelerometer: Sensor? = null
 
@@ -47,34 +41,9 @@ class AccelerometerSensor : Service(), SensorEventListener {
     private val dataBuffer = ArrayList<AccelerometerEvent>()
 
     // Parameters of the sensor
-    /**
-     * Accelerometer frequency in microseconds: e.g.,
-     * 0 - fastest
-     * 20000 - game
-     * 60000 - UI
-     * 200000 - normal (default)
-     */
-    private var frequency = 200000
-
-    /**
-     * Accelerometer threshold (float).  Do not record consecutive points if
-     * change in value of all axes is less than this.
-     */
-    private var threshold = 0.0
-
-    /**
-     * Discard sensor events that come in more often than frequency
-     */
-    private var enforceFrequency = false
-    private var debugDbSlow = false
+    private var config: Accelerometer.AccelerometerConfig = Accelerometer.getDefaultConfig()
     private var sensorObserver: AWARESensorObserver? = null
-    private var deviceID = ""
-    private var label = ""
-    private var debug = false
-    private var wakeLockEnabled = false
-    private var bufferSize = 250
-    private var bufferTimeout = 30000
-    //////////////////////////
+
 
     // TODO (sercant): data label stuff. Maybe not needed anymore?
 //        const val ACTION_AWARE_ACCELEROMETER = "ACTION_AWARE_ACCELEROMETER"
@@ -101,7 +70,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
         val sensorThread = sensorThread!!
         sensorThread.start()
 
-        if (wakeLockEnabled) {
+        if (config.wakeLockEnabled) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG)
             wakeLock!!.acquire()
@@ -115,24 +84,25 @@ class AccelerometerSensor : Service(), SensorEventListener {
 //        filter.addAction(ACTION_AWARE_ACCELEROMETER_LABEL)
 //        registerReceiver(dataLabeler, filter)
 
-        if (debug) Log.d(TAG, "Accelerometer service created!")
+        if (config.debug) Log.d(TAG, "Accelerometer service created!")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
         // TODO (sercant): check permissions!!
+        val congfig = intent!!.extras.getBundle("config")
 
         if (mAccelerometer == null) {
-            if (debug) Log.w(TAG, "This device does not have an accelerometer!")
+            if (config.debug) Log.w(TAG, "This device does not have an accelerometer!")
             stopSelf()
         } else {
             saveAccelerometerDevice(mAccelerometer)
 
-            mSensorManager!!.registerListener(this, mAccelerometer, frequency, sensorHandler)
+            mSensorManager!!.registerListener(this, mAccelerometer, config.frequency, sensorHandler)
             LAST_SAVE = System.currentTimeMillis()
 
-            if (debug) Log.d(TAG, "Accelerometer service active: $frequency ms")
+            if (config.debug) Log.d(TAG, "Accelerometer service active: ${config.frequency} ms")
         }
 
         return Service.START_STICKY
@@ -142,7 +112,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
         if (acc == null) return
 
         val device = AccelerometerDevice()
-        device.device_id = deviceID
+        device.device_id = config.deviceID
         device.timestamp = System.currentTimeMillis()
         device.double_sensor_maximum_range = acc.maximumRange
         device.double_sensor_minimum_delay = acc.minDelay.toFloat()
@@ -155,8 +125,9 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
         Engine.getDefaultEngine().saveDeviceAsync(device)
 
-        if (debug) Log.d(TAG, "Accelerometer device:" + device.toString())
+        if (config.debug) Log.d(TAG, "Accelerometer device:" + device.toString())
     }
+
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
         //We log current accuracy on the sensor changed event
     }
@@ -164,12 +135,12 @@ class AccelerometerSensor : Service(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         val currentTime = System.currentTimeMillis()
 
-        if (enforceFrequency && currentTime < LAST_TS + frequency / 1000)
+        if (config.enforceFrequency && currentTime < LAST_TS + config.frequency / 1000)
             return
 
-        if (LAST_VALUES != null && threshold > 0 && Math.abs(event.values[0] - LAST_VALUES!![0]) < threshold
-                && Math.abs(event.values[1] - LAST_VALUES!![1]) < threshold
-                && Math.abs(event.values[2] - LAST_VALUES!![2]) < threshold) {
+        if (LAST_VALUES != null && config.threshold > 0 && Math.abs(event.values[0] - LAST_VALUES!![0]) < config.threshold
+                && Math.abs(event.values[1] - LAST_VALUES!![1]) < config.threshold
+                && Math.abs(event.values[2] - LAST_VALUES!![2]) < config.threshold) {
             return
         }
 
@@ -178,12 +149,12 @@ class AccelerometerSensor : Service(), SensorEventListener {
         val data = AccelerometerEvent()
         data.timestamp = currentTime
         data.eventTimestamp = event.timestamp
-        data.device_id = deviceID
+        data.device_id = config.deviceID
         data.double_values_0 = event.values[0]
         data.double_values_1 = event.values[1]
         data.double_values_2 = event.values[2]
         data.accuracy = event.accuracy
-        data.label = label
+        data.label = config.label
 
         if (sensorObserver != null) {
             sensorObserver!!.onAccelerometerChanged(data)
@@ -192,7 +163,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
         dataBuffer.add(data)
         LAST_TS = currentTime
 
-        if (dataBuffer.size < bufferSize && currentTime < LAST_SAVE + bufferTimeout) {
+        if (dataBuffer.size < config.bufferSize && currentTime < LAST_SAVE + config.bufferTimeout) {
             return
         }
 
@@ -200,11 +171,11 @@ class AccelerometerSensor : Service(), SensorEventListener {
         this.dataBuffer.clear()
 
         try {
-            if (!debugDbSlow) {
+            if (!config.debugDbSlow) {
                 Engine.getDefaultEngine().bulkInsertAsync(dataBuffer)
             }
         } catch (e: Exception) {
-            if (debug) Log.d(TAG, e.message)
+            if (config.debug) Log.d(TAG, e.message)
         }
 
         LAST_SAVE = currentTime
@@ -216,14 +187,14 @@ class AccelerometerSensor : Service(), SensorEventListener {
         sensorHandler!!.removeCallbacksAndMessages(null)
         mSensorManager!!.unregisterListener(this, mAccelerometer)
         sensorThread!!.quit()
-        if (wakeLockEnabled) {
+        if (config.wakeLockEnabled) {
             wakeLock!!.release()
         }
 
         // TODO (sercant): data label stuff. Maybe not needed anymore?
 //        unregisterReceiver(dataLabeler)
 
-        if (debug) Log.d(TAG, "Accelerometer service terminated...")
+        if (config.debug) Log.d(TAG, "Accelerometer service terminated...")
     }
 
     override fun onBind(intent: Intent): IBinder? {
