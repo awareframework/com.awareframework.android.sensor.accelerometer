@@ -1,19 +1,20 @@
 package com.aware.sensor.accelerometer
 
 import android.content.Context
+import android.content.Intent
 import android.os.Parcel
 import android.os.Parcelable
 
 /**
- * Configuration class for the sensor
+ * Main interaction class with the sensor
  *
  * @author  sercant
  * @date 19/02/2018
  */
-class Accelerometer {
-
-    private var context: Context? = null
-    private var config: AccelerometerConfig? = null
+class Accelerometer private constructor(
+        private var context: Context,
+        private var config: AccelerometerConfig = defaultConfig
+) {
 
     data class AccelerometerConfig(
             /**
@@ -109,14 +110,17 @@ class Accelerometer {
         fun build(): Accelerometer = Accelerometer(context, config)
     }
 
-    private constructor(context: Context, config: AccelerometerConfig) {
-        this.context = context
-        this.config = config
+    companion object {
+        val defaultConfig: AccelerometerConfig = AccelerometerConfig()
     }
 
-    companion object {
-        fun getDefaultConfig(): AccelerometerConfig {
-            return AccelerometerConfig()
-        }
+    fun start() {
+        val intent = Intent(context, AccelerometerSensor::class.java)
+        intent.putExtra(AccelerometerSensor.CONFIG_EXTRA_KEY, config)
+        context.startService(intent)
+    }
+
+    fun stop() {
+        context.stopService(Intent(context, AccelerometerSensor::class.java))
     }
 }

@@ -27,6 +27,10 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
     val TAG = "com.aware.sensor.aclm"
 
+    companion object {
+        val CONFIG_EXTRA_KEY = "accelerometer_config"
+    }
+
     private var mSensorManager: SensorManager? = null
     private var mAccelerometer: Sensor? = null
 
@@ -41,7 +45,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
     private val dataBuffer = ArrayList<AccelerometerEvent>()
 
     // Parameters of the sensor
-    private var config: Accelerometer.AccelerometerConfig = Accelerometer.getDefaultConfig()
+    private var config: Accelerometer.AccelerometerConfig = Accelerometer.defaultConfig
     private var sensorObserver: AWARESensorObserver? = null
 
 
@@ -91,7 +95,10 @@ class AccelerometerSensor : Service(), SensorEventListener {
         super.onStartCommand(intent, flags, startId)
 
         // TODO (sercant): check permissions!!
-        val congfig = intent!!.extras.getBundle("config")
+
+        if (intent != null) {
+            config = intent.extras.getParcelable(AccelerometerSensor.CONFIG_EXTRA_KEY)
+        }
 
         if (mAccelerometer == null) {
             if (config.debug) Log.w(TAG, "This device does not have an accelerometer!")
@@ -123,7 +130,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
         device.sensor_vendor = acc.vendor
         device.sensor_version = acc.version.toString()
 
-        Engine.getDefaultEngine().saveDeviceAsync(device)
+        Engine.getDefaultEngine(applicationContext).saveDeviceAsync(device)
 
         if (config.debug) Log.d(TAG, "Accelerometer device:" + device.toString())
     }
@@ -172,7 +179,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
         try {
             if (!config.debugDbSlow) {
-                Engine.getDefaultEngine().bulkInsertAsync(dataBuffer)
+                Engine.getDefaultEngine(applicationContext).bulkInsertAsync(dataBuffer)
             }
         } catch (e: Exception) {
             if (config.debug) Log.d(TAG, e.message)
