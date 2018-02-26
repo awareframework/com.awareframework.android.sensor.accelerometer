@@ -44,13 +44,6 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
     private val dataBuffer = ArrayList<AccelerometerEvent>()
 
-    // TODO (sercant): data label stuff. Maybe not needed anymore?
-//        const val ACTION_AWARE_ACCELEROMETER = "ACTION_AWARE_ACCELEROMETER"
-//        const val ACTION_AWARE_ACCELEROMETER_LABEL = "ACTION_AWARE_ACCELEROMETER_LABEL"
-//        const val EXTRA_LABEL = "label"
-//
-//        private val dataLabeler = DataLabel()
-
     override fun onCreate() {
         super.onCreate()
 
@@ -72,19 +65,11 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
         sensorHandler = Handler(sensorThread.looper)
 
-
-        // TODO (sercant): data label stuff. Maybe not needed anymore?
-//        val filter = IntentFilter()
-//        filter.addAction(ACTION_AWARE_ACCELEROMETER_LABEL)
-//        registerReceiver(dataLabeler, filter)
-
         if (CONFIG.debug) Log.d(TAG, "Accelerometer service created!")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-
-        // TODO (sercant): check permissions!!
 
         if (mAccelerometer == null) {
             if (CONFIG.debug) Log.w(TAG, "This device does not have an accelerometer!")
@@ -164,6 +149,9 @@ class AccelerometerSensor : Service(), SensorEventListener {
         try {
             if (!CONFIG.debugDbSlow) {
                 Engine.getDefaultEngine(applicationContext).bulkInsertAsync(dataBuffer)
+
+                val accelerometerData = Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER)
+                sendBroadcast(accelerometerData)
             }
         } catch (e: Exception) {
             if (CONFIG.debug) Log.d(TAG, e.message)
@@ -181,9 +169,6 @@ class AccelerometerSensor : Service(), SensorEventListener {
         if (CONFIG.wakeLockEnabled) {
             wakeLock?.release()
         }
-
-        // TODO (sercant): data label stuff. Maybe not needed anymore?
-//        unregisterReceiver(dataLabeler)
 
         if (CONFIG.debug) Log.d(TAG, "Accelerometer service terminated...")
     }

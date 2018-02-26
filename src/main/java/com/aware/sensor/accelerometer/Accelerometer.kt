@@ -1,8 +1,15 @@
 package com.aware.sensor.accelerometer
 
+import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.support.v4.content.ContextCompat
+import android.util.Log
 import com.aware.sensor.accelerometer.model.AccelerometerEvent
+
 
 /**
  * Main interaction class with the sensor
@@ -14,7 +21,22 @@ class Accelerometer private constructor(
         private var context: Context,
         config: AccelerometerConfig = defaultConfig
 
-) {
+) : BroadcastReceiver() {
+
+    companion object {
+        val ACTION_AWARE_ACCELEROMETER_START = "ACTION_AWARE_ACCELEROMETER_START"
+        val ACTION_AWARE_ACCELEROMETER_STOP = "ACTION_AWARE_ACCELEROMETER_STOP"
+
+        val ACTION_AWARE_ACCELEROMETER = "ACTION_AWARE_ACCELEROMETER"
+
+        val ACTION_AWARE_ACCELEROMETER_LABEL = "ACTION_AWARE_ACCELEROMETER_LABEL"
+        val EXTRA_LABEL = "label"
+
+        val defaultConfig: AccelerometerConfig = AccelerometerConfig()
+    }
+
+    internal val TAG = "com.aware.accelerometer"
+
     var config: AccelerometerConfig = config
         private set
 
@@ -62,7 +84,6 @@ class Accelerometer private constructor(
         fun setDebugDBSlow(debugDBSlow: Boolean) = apply { config.debugDbSlow = debugDBSlow }
         fun setSensorObserver(sensorObserver: SensorObserver) = apply { config.sensorObserver = sensorObserver }
         fun setDeviceID(deviceID: String) = apply { config.deviceID = deviceID }
-
         fun setDataLabel(dataLabel: String) = apply { config.label = dataLabel }
         fun setDebug(debug: Boolean) = apply { config.debug = debug }
         fun setWakeLock(wakeLock: Boolean) = apply { config.wakeLockEnabled = wakeLock }
@@ -72,17 +93,45 @@ class Accelerometer private constructor(
         fun build(): Accelerometer = Accelerometer(context, config)
     }
 
-    companion object {
-        val defaultConfig: AccelerometerConfig = AccelerometerConfig()
+    init {
+        // TODO WARN (sercant): this will leak!! What should we do if we want to start and stop using
+        // TODO WARN (sercant): receivers?
+        setLabelReceiver(true)
     }
 
     fun start() {
         AccelerometerSensor.CONFIG = config
-        val intent = Intent(context, AccelerometerSensor::class.java)
-        context.startService(intent)
+
+        if (config.wakeLockEnabled and (ContextCompat.checkSelfPermission(context, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)) {
+            Log.e(TAG, "Permission for the WAKE_LOCK is not granted!")
+        } else {
+            val intent = Intent(context, AccelerometerSensor::class.java)
+            context.startService(intent)
+        }
     }
 
     fun stop() {
         context.stopService(Intent(context, AccelerometerSensor::class.java))
+    }
+
+    private fun setLabelReceiver(on: Boolean) {
+        if (on) {
+            val filter = IntentFilter()
+            filter.addAction(ACTION_AWARE_ACCELEROMETER_LABEL)
+
+            context.registerReceiver(this, filter)
+        } else {
+            context.unregisterReceiver(this)
+        }
+    }
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+        when (intent?.action) {
+            ACTION_AWARE_ACCELEROMETER_START -> this.start()
+
+            ACTION_AWARE_ACCELEROMETER_STOP -> this.stop()
+
+            ACTION_AWARE_ACCELEROMETER_LABEL -> config.label = intent.getStringExtra(EXTRA_LABEL)
+        }
     }
 }
