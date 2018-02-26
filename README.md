@@ -11,6 +11,21 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 This repository is a modularized version of the [AWARE](https://github.com/denzilferreira/aware-client) framework.
 
+## Example usage
+
+```kotlin
+val accelerometer: Accelerometer = Accelerometer.Builder(applicationContext)
+        .setDebug(true)
+        .setDeviceID(UUID.randomUUID().toString())
+        .setSensorObserver(object : Accelerometer.SensorObserver {
+            override fun onAccelerometerChanged(data: AccelerometerEvent) {
+                Log.d("mSensorObserver", data.toString())
+            }
+        })
+        .build()
+accelerometer.start()
+```
+
 # Individuals: Record your own data
 
 No programming skills are required. The mobile application allows you to enable or disable sensors and plugins. The data is saved locally on your mobile phone. Privacy is enforced by design, so AWARE does not log personal information, such as phone numbers or contacts information. You can additionally install plugins that will further enhance the capabilities of your device, straight from the client.
