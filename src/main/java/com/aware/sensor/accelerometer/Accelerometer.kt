@@ -110,6 +110,7 @@ class Accelerometer private constructor(
     }
 
     fun start(config: AccelerometerConfig) {
+        this.config = config
         AccelerometerSensor.CONFIG = config
 
         if (config.wakeLockEnabled and (ContextCompat.checkSelfPermission(context, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)) {
