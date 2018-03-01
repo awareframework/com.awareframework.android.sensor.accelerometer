@@ -1,6 +1,12 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+project.ext {
+    support_libs = support_libs ?: (System.getenv("support_libs") as String ?: "27.0.2")
+    saferoom = (System.getenv("saferoom") ?: "0.3.2")
+    room = (System.getenv("saferoom") ?: "1.0.0")
+}
+
 android {
     compileSdkVersion compile_sdk
     buildToolsVersion build_tools
