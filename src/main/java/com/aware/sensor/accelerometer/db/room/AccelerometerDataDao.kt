@@ -28,4 +28,7 @@ import android.arch.persistence.room.OnConflictStrategy.REPLACE
 
     @Delete
     fun delete(data: AccelerometerData)
+
+    @Query("DELETE FROM accelerometerData")
+    fun deleteAll()
 }
