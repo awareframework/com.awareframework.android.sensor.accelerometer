@@ -11,7 +11,11 @@ import com.aware.sensor.accelerometer.model.AccelerometerEvent
  * @author  sercant
  * @date 15/02/2018
  */
-abstract class Engine(private val context: Context, private val encryptionKey: String?) {
+abstract class Engine(
+        private val context: Context,
+        private val encryptionKey: String?,
+        private val dbName: String
+) {
 
     enum class DatabaseType {
         ROOM,
@@ -21,20 +25,25 @@ abstract class Engine(private val context: Context, private val encryptionKey: S
     class Builder(val context: Context) {
         private var type: DatabaseType = DatabaseType.NONE
         private var encryptionKey: String? = null
+        private var dbName: String = "aware_accelerometer.db"
 
         fun setDatabaseType(type: DatabaseType) = apply { this.type = type }
         fun setEncryptionKey(encryptionKey: String?) = apply { this.encryptionKey = encryptionKey }
+        fun setDatabaseName(name: String) = apply { this.dbName = name }
 
         fun build(): Engine? {
             return when (type) {
-                DatabaseType.ROOM -> RoomEngine(context, encryptionKey)
+                DatabaseType.ROOM -> RoomEngine(context, encryptionKey, dbName)
                 DatabaseType.NONE -> null
             }
         }
     }
 
-    abstract fun bulkInsertAsync(events: Array<AccelerometerEvent>)
-    abstract fun saveDeviceAsync(device: AccelerometerDevice)
+    abstract fun <T> getAll(klass: Class<T>): List<T>?
+
+    abstract fun bulkInsertAsync(events: Array<AccelerometerEvent>): Thread
+    abstract fun saveDeviceAsync(device: AccelerometerDevice): Thread
+    abstract fun clearData(): Thread
     abstract fun destroy()
 }
 

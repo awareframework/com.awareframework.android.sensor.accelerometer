@@ -13,7 +13,7 @@ import com.commonsware.cwac.saferoom.SafeHelperFactory
  * @author  sercant
  * @date 23/02/2018
  */
-@Database(entities = arrayOf(AccelerometerData::class), version = 2)
+@Database(entities = arrayOf(AccelerometerData::class), version = 3)
 abstract class AccelerometerRoomDatabase : RoomDatabase() {
 
     abstract fun AccelerometerDataDao(): AccelerometerDataDao
@@ -24,14 +24,14 @@ abstract class AccelerometerRoomDatabase : RoomDatabase() {
         var instance: AccelerometerRoomDatabase? = null
             private set
 
-        fun init(context: Context, encryptionKey: String?) {
+        fun init(context: Context, encryptionKey: String?, dbName: String) {
             synchronized(AccelerometerRoomDatabase::class) {
                 if (instance != null) {
                     destroyInstance()
                 }
 
                 val builder = Room.databaseBuilder(context.applicationContext,
-                        AccelerometerRoomDatabase::class.java, "accelerometer.db")
+                        AccelerometerRoomDatabase::class.java, dbName)
                 if (encryptionKey != null) {
                     builder.openHelperFactory(SafeHelperFactory(encryptionKey.toCharArray()))
                 }
@@ -47,5 +47,10 @@ abstract class AccelerometerRoomDatabase : RoomDatabase() {
             instance?.close()
             instance = null
         }
+    }
+
+    fun clearAllData() {
+        AccelerometerDataDao().deleteAll()
+        // TODO (sercant): clear device info
     }
 }
