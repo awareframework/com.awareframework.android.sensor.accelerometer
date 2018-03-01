@@ -1,5 +1,7 @@
 package com.aware.sensor.accelerometer.model
 
+import com.google.gson.Gson
+
 /**
  * Holds the data of the sensor events
  *
@@ -8,14 +10,21 @@ package com.aware.sensor.accelerometer.model
  */
 data class AccelerometerEvent(
         var timestamp: Long,
-        var eventTimestamp: Long,
+        var event_timestamp: Long,
+        var timezone: Int,
         var device_id: String,
-        var double_values_0: Float,
-        var double_values_1: Float,
-        var double_values_2: Float,
+        var x: Float,
+        var y: Float,
+        var z: Float,
         var accuracy: Int,
-        var label: String
+        var label: String,
+        var os: String,
+        var json_version: Int
 ) {
-    constructor() : this(0, 0, "", 0f, 0f, 0f,
-            0, "")
+    constructor() : this(0, 0, 0, "", 0f, 0f, 0f,
+            0, "", "android", 1)
+
+    fun toJson(): String {
+        return Gson().toJson(this)
+    }
 }

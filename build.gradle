@@ -2,16 +2,16 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion compile_sdk
+    buildToolsVersion build_tools
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode version_code
+        versionName version_readable
+        targetSdkVersion target_sdk
+        minSdkVersion minimum_sdk
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
 
     buildTypes {
@@ -23,19 +23,29 @@ android {
 
 }
 
+repositories {
+    jcenter()
+    mavenCentral()
+//    maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation "com.android.support:appcompat-v7:$support_libs"
+
+    // Test Libs
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
+    implementation 'com.google.code.gson:gson:2.8.2'
+
     // ROOM
-    compile "android.arch.persistence.room:runtime:1.1.0-alpha2"
-    kapt "android.arch.persistence.room:compiler:1.1.0-alpha2"
-}
-repositories {
-    mavenCentral()
+    implementation "android.arch.persistence.room:runtime:$room"
+    kapt "android.arch.persistence.room:compiler:$room"
+    implementation "com.commonsware.cwac:saferoom:$saferoom"
+
 }

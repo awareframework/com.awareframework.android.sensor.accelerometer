@@ -1,7 +1,6 @@
 package com.aware.sensor.accelerometer.db
 
 import android.content.Context
-import android.util.Log
 import com.aware.sensor.accelerometer.model.AccelerometerDevice
 import com.aware.sensor.accelerometer.model.AccelerometerEvent
 
@@ -12,30 +11,30 @@ import com.aware.sensor.accelerometer.model.AccelerometerEvent
  * @author  sercant
  * @date 15/02/2018
  */
-interface Engine {
+abstract class Engine(private val context: Context, private val encryptionKey: String?) {
 
     enum class DatabaseType {
-        ROOM
+        ROOM,
+        NONE
     }
 
-//    fun connect(database: DatabaseType) {
-////        when (database) {
-////            DatabaseType.ROOM ->
-////        }
-//    }
+    class Builder(val context: Context) {
+        private var type: DatabaseType = DatabaseType.NONE
+        private var encryptionKey: String? = null
 
-    companion object {
-        fun getDefaultEngine(context: Context): Engine {
-            return RoomEngine(context)
+        fun setDatabaseType(type: DatabaseType) = apply { this.type = type }
+        fun setEncryptionKey(encryptionKey: String?) = apply { this.encryptionKey = encryptionKey }
+
+        fun build(): Engine? {
+            return when (type) {
+                DatabaseType.ROOM -> RoomEngine(context, encryptionKey)
+                DatabaseType.NONE -> null
+            }
         }
     }
 
-    fun bulkInsertAsync(events: Array<AccelerometerEvent>) {
-        Log.d("Aclm-Engine", events.toString())
-    }
-
-    fun saveDeviceAsync(device: AccelerometerDevice) {
-        Log.d("Aclm-Engine", device.toString())
-    }
+    abstract fun bulkInsertAsync(events: Array<AccelerometerEvent>)
+    abstract fun saveDeviceAsync(device: AccelerometerDevice)
+    abstract fun destroy()
 }
 

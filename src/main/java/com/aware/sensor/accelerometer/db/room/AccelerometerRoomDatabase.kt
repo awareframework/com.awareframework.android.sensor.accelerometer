@@ -4,6 +4,7 @@ import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
 import android.content.Context
+import com.commonsware.cwac.saferoom.SafeHelperFactory
 
 /**
  * Room accelerometer database class.
@@ -12,27 +13,39 @@ import android.content.Context
  * @author  sercant
  * @date 23/02/2018
  */
-@Database(entities = arrayOf(AccelerometerData::class), version = 1)
+@Database(entities = arrayOf(AccelerometerData::class), version = 2)
 abstract class AccelerometerRoomDatabase : RoomDatabase() {
 
     abstract fun AccelerometerDataDao(): AccelerometerDataDao
 
-    companion object {
-        private var INSTANCE: AccelerometerRoomDatabase? = null
+//    abstract fun AccelerometerDeviceDao(): AccelerometerDeviceDao
 
-        fun getInstance(context: Context): AccelerometerRoomDatabase? {
-            if (INSTANCE == null) {
-                synchronized(AccelerometerRoomDatabase::class) {
-                    INSTANCE = Room.databaseBuilder(context.applicationContext,
-                            AccelerometerRoomDatabase::class.java, "accelerometer.db")
-                            .build()
+    companion object {
+        var instance: AccelerometerRoomDatabase? = null
+            private set
+
+        fun init(context: Context, encryptionKey: String?) {
+            synchronized(AccelerometerRoomDatabase::class) {
+                if (instance != null) {
+                    destroyInstance()
                 }
+
+                val builder = Room.databaseBuilder(context.applicationContext,
+                        AccelerometerRoomDatabase::class.java, "accelerometer.db")
+                if (encryptionKey != null) {
+                    builder.openHelperFactory(SafeHelperFactory(encryptionKey.toCharArray()))
+                }
+
+                instance = builder
+                        // TODO (sercant): handle migrations!
+                        .fallbackToDestructiveMigration()
+                        .build()
             }
-            return INSTANCE
         }
 
         fun destroyInstance() {
-            INSTANCE = null
+            instance?.close()
+            instance = null
         }
     }
 }

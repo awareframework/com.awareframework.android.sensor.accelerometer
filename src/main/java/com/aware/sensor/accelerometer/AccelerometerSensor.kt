@@ -15,6 +15,9 @@ import android.util.Log
 import com.aware.sensor.accelerometer.db.Engine
 import com.aware.sensor.accelerometer.model.AccelerometerDevice
 import com.aware.sensor.accelerometer.model.AccelerometerEvent
+import java.util.TimeZone
+import kotlin.collections.ArrayList
+import kotlin.collections.toTypedArray
 
 /**
  * Implementation of Aware accelerometer in kotlin as a standalone service.
@@ -44,10 +47,17 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
     private val dataBuffer = ArrayList<AccelerometerEvent>()
 
+    private var dbEngine: Engine? = null
+
     override fun onCreate() {
         super.onCreate()
 
 //        AUTHORITY = getAuthority()
+
+        dbEngine = Engine.Builder(applicationContext)
+                .setDatabaseType(CONFIG.databaseType)
+                .setEncryptionKey(CONFIG.encryptionKey)
+                .build()
 
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         mAccelerometer = mSensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -65,7 +75,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
         sensorHandler = Handler(sensorThread.looper)
 
-        if (CONFIG.debug) Log.d(TAG, "Accelerometer service created!")
+        if (CONFIG.debug) Log.d(TAG, "Accelerometer service created.")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -101,7 +111,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
         device.sensor_vendor = acc.vendor
         device.sensor_version = acc.version.toString()
 
-        Engine.getDefaultEngine(applicationContext).saveDeviceAsync(device)
+        dbEngine?.saveDeviceAsync(device)
 
         if (CONFIG.debug) Log.d(TAG, "Accelerometer device:" + device.toString())
     }
@@ -126,11 +136,12 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
         val data = AccelerometerEvent()
         data.timestamp = currentTime
-        data.eventTimestamp = event.timestamp
+        data.event_timestamp = event.timestamp
+        data.timezone = TimeZone.getDefault().rawOffset
         data.device_id = CONFIG.deviceID
-        data.double_values_0 = event.values[0]
-        data.double_values_1 = event.values[1]
-        data.double_values_2 = event.values[2]
+        data.x = event.values[0]
+        data.y = event.values[1]
+        data.z = event.values[2]
         data.accuracy = event.accuracy
         data.label = CONFIG.label
 
@@ -147,12 +158,10 @@ class AccelerometerSensor : Service(), SensorEventListener {
         this.dataBuffer.clear()
 
         try {
-            if (!CONFIG.debugDbSlow) {
-                Engine.getDefaultEngine(applicationContext).bulkInsertAsync(dataBuffer)
+            dbEngine?.bulkInsertAsync(dataBuffer)
 
-                val accelerometerData = Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER)
-                sendBroadcast(accelerometerData)
-            }
+            val accelerometerData = Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER)
+            sendBroadcast(accelerometerData)
         } catch (e: Exception) {
             if (CONFIG.debug) Log.d(TAG, e.message)
         }
@@ -169,6 +178,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
         if (CONFIG.wakeLockEnabled) {
             wakeLock?.release()
         }
+        dbEngine?.destroy()
 
         if (CONFIG.debug) Log.d(TAG, "Accelerometer service terminated...")
     }

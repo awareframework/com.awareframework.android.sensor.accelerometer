@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import com.aware.sensor.accelerometer.db.Engine
 import com.aware.sensor.accelerometer.model.AccelerometerEvent
 
 
@@ -64,14 +65,16 @@ class Accelerometer private constructor(
              * Discard sensor events that come in more often than frequency
              */
             var enforceFrequency: Boolean = false,
-            var debugDbSlow: Boolean = false,
+//            var debugDbSlow: Boolean = false,
             var sensorObserver: SensorObserver? = null,
             var deviceID: String = "",
             var label: String = "",
             var debug: Boolean = false,
             var wakeLockEnabled: Boolean = false,
             var bufferSize: Int = 250,
-            var bufferTimeout: Int = 30000
+            var bufferTimeout: Int = 30000,
+            var encryptionKey: String? = null,
+            var databaseType: Engine.DatabaseType = Engine.DatabaseType.NONE
     )
 
     class Builder(private val context: Context) {
@@ -81,14 +84,17 @@ class Accelerometer private constructor(
         fun setFrequency(frequency: Int) = apply { config.frequency = frequency }
         fun setThreshold(threshold: Float) = apply { config.threshold = threshold }
         fun setEnforceFrequency(enforceFrequency: Boolean) = apply { config.enforceFrequency = enforceFrequency }
-        fun setDebugDBSlow(debugDBSlow: Boolean) = apply { config.debugDbSlow = debugDBSlow }
+        //        fun setDebugDBSlow(debugDBSlow: Boolean) = apply { config.debugDbSlow = debugDBSlow }
         fun setSensorObserver(sensorObserver: SensorObserver) = apply { config.sensorObserver = sensorObserver }
+
         fun setDeviceID(deviceID: String) = apply { config.deviceID = deviceID }
-        fun setDataLabel(dataLabel: String) = apply { config.label = dataLabel }
+        fun setLabel(dataLabel: String) = apply { config.label = dataLabel }
         fun setDebug(debug: Boolean) = apply { config.debug = debug }
         fun setWakeLock(wakeLock: Boolean) = apply { config.wakeLockEnabled = wakeLock }
         fun setBufferSize(bufferSize: Int) = apply { config.bufferSize = bufferSize }
         fun setBufferTimeout(bufferTimeout: Int) = apply { config.bufferTimeout = bufferTimeout }
+        fun setDatabasePassword(password: String) = apply { config.encryptionKey = password }
+        fun setDatabaseType(type: Engine.DatabaseType) = apply { config.databaseType = type }
 
         fun build(): Accelerometer = Accelerometer(context, config)
     }
@@ -100,6 +106,10 @@ class Accelerometer private constructor(
     }
 
     fun start() {
+        start(config)
+    }
+
+    fun start(config: AccelerometerConfig) {
         AccelerometerSensor.CONFIG = config
 
         if (config.wakeLockEnabled and (ContextCompat.checkSelfPermission(context, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)) {
