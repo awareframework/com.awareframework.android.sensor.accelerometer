@@ -1,8 +1,9 @@
 package com.aware.sensor.accelerometer.db
 
 import android.content.Context
-import com.aware.sensor.accelerometer.db.room.AccelerometerData
 import com.aware.sensor.accelerometer.db.room.AccelerometerRoomDatabase
+import com.aware.sensor.accelerometer.db.room.DeviceRoomEntity
+import com.aware.sensor.accelerometer.db.room.EventRoomEntity
 import com.aware.sensor.accelerometer.model.AccelerometerDevice
 import com.aware.sensor.accelerometer.model.AccelerometerEvent
 import net.sqlcipher.database.SQLiteException
@@ -25,11 +26,11 @@ class RoomEngine(context: Context, encryptionKey: String?, dbName: String) : Eng
         return thread {
             try {
                 val db = AccelerometerRoomDatabase.instance
-                val data = arrayListOf<AccelerometerData>()
+                val data = arrayListOf<EventRoomEntity>()
                 events.forEach { event: AccelerometerEvent ->
-                    data.add(AccelerometerData(event))
+                    data.add(EventRoomEntity(event = event))
                 }
-                db!!.AccelerometerDataDao().insertAll(data.toTypedArray())
+                db!!.AccelerometerEventDao().insertAll(data.toTypedArray())
             } catch (e: SQLiteException) {
                 // TODO (sercant): user changed the password for the db. Handle it!
                 e.printStackTrace()
@@ -39,7 +40,15 @@ class RoomEngine(context: Context, encryptionKey: String?, dbName: String) : Eng
 
     override fun saveDeviceAsync(device: AccelerometerDevice): Thread {
         return thread {
-            // TODO (sercant): implement
+            try {
+                val db = AccelerometerRoomDatabase.instance
+                // TODO (sercant): We don't expect to have several sensors in one device right?
+                val data = DeviceRoomEntity(0, device)
+                db!!.AccelerometerDeviceDao().insert(data)
+            } catch (e: SQLiteException) {
+                // TODO (sercant): user changed the password for the db. Handle it!
+                e.printStackTrace()
+            }
         }
     }
 
@@ -47,12 +56,15 @@ class RoomEngine(context: Context, encryptionKey: String?, dbName: String) : Eng
         var result: List<T>? = null
         val db = AccelerometerRoomDatabase.instance
 
+
         when (klass) {
             AccelerometerEvent::class.java -> {
-                // WARN (sercant): somehow this cast from db.room.AccelerometerData
-                // to model.AccelerometerEvent is successful without any inheritance
                 @Suppress("UNCHECKED_CAST")
-                result = db!!.AccelerometerDataDao().getAll() as List<T>
+                result = db!!.AccelerometerEventDao().getAll() as List<T>
+            }
+            AccelerometerDevice::class.java -> {
+                @Suppress("UNCHECKED_CAST")
+                result = db!!.AccelerometerDeviceDao().getAll() as List<T>
             }
         }
 

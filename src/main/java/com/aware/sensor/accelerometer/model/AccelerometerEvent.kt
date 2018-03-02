@@ -8,7 +8,7 @@ import com.google.gson.Gson
  * @author  sercant
  * @date 17/02/2018
  */
-data class AccelerometerEvent(
+open class AccelerometerEvent(
         var timestamp: Long,
         var event_timestamp: Long,
         var timezone: Int,

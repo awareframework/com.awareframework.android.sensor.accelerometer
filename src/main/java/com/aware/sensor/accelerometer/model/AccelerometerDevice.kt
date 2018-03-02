@@ -1,5 +1,7 @@
 package com.aware.sensor.accelerometer.model
 
+import android.hardware.Sensor
+
 /**
  * Holds the information about
  * the accelerometer sensor of the device
@@ -7,18 +9,41 @@ package com.aware.sensor.accelerometer.model
  * @author  sercant
  * @date 17/02/2018
  */
-data class AccelerometerDevice(
-        var device_id: String,
+open class AccelerometerDevice(
+        var deviceId: String,
         var timestamp: Long,
-        var double_sensor_maximum_range: Float,
-        var double_sensor_minimum_delay: Float,
-        var sensor_name: String,
-        var double_sensor_power_ma: Float,
-        var double_sensor_resolution: Float,
-        var sensor_type: String,
-        var sensor_vendor: String,
-        var sensor_version: String
+        var maxRange: Float,
+        var minDelay: Float,
+        var name: String,
+        var power: Float, // in Ma
+        var resolution: Float,
+        var type: String,
+        var vendor: String,
+        var version: String
 ) {
-    constructor() : this("", 0, 0f, 0f, "", 0f,
-            0f, "", "", "")
+    constructor() : this(
+            "",
+            0,
+            0f,
+            0f,
+            "",
+            0f,
+            0f,
+            "",
+            "",
+            ""
+    )
+
+    constructor(device_id: String, timestamp: Long, sensor: Sensor) : this(
+            device_id,
+            timestamp,
+            sensor.maximumRange,
+            sensor.minDelay.toFloat(),
+            sensor.name,
+            sensor.power,
+            sensor.resolution,
+            sensor.type.toString(),
+            sensor.vendor,
+            sensor.version.toString()
+    )
 }

@@ -99,17 +99,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
     private fun saveAccelerometerDevice(acc: Sensor?) {
         if (acc == null) return
 
-        val device = AccelerometerDevice()
-        device.device_id = CONFIG.deviceID
-        device.timestamp = System.currentTimeMillis()
-        device.double_sensor_maximum_range = acc.maximumRange
-        device.double_sensor_minimum_delay = acc.minDelay.toFloat()
-        device.sensor_name = acc.name
-        device.double_sensor_power_ma = acc.power
-        device.double_sensor_resolution = acc.resolution
-        device.sensor_type = acc.type.toString()
-        device.sensor_vendor = acc.vendor
-        device.sensor_version = acc.version.toString()
+        val device = AccelerometerDevice(CONFIG.deviceID, System.currentTimeMillis(), acc)
 
         dbEngine?.saveDeviceAsync(device)
 

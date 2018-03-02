@@ -13,12 +13,11 @@ import com.commonsware.cwac.saferoom.SafeHelperFactory
  * @author  sercant
  * @date 23/02/2018
  */
-@Database(entities = arrayOf(AccelerometerData::class), version = 3)
+@Database(entities = arrayOf(EventRoomEntity::class, DeviceRoomEntity::class), version = 5)
 abstract class AccelerometerRoomDatabase : RoomDatabase() {
 
-    abstract fun AccelerometerDataDao(): AccelerometerDataDao
-
-//    abstract fun AccelerometerDeviceDao(): AccelerometerDeviceDao
+    abstract fun AccelerometerEventDao(): AccelerometerEventDao
+    abstract fun AccelerometerDeviceDao(): AccelerometerDeviceDao
 
     companion object {
         var instance: AccelerometerRoomDatabase? = null
@@ -50,7 +49,7 @@ abstract class AccelerometerRoomDatabase : RoomDatabase() {
     }
 
     fun clearAllData() {
-        AccelerometerDataDao().deleteAll()
-        // TODO (sercant): clear device info
+        AccelerometerEventDao().deleteAll()
+        AccelerometerDeviceDao().deleteAll()
     }
 }
