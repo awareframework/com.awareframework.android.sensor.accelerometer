@@ -1,6 +1,6 @@
 package com.awareframework.android.sensor.accelerometer.model
 
-import com.awareframework.android.sensor.core.model.AwareObject
+import com.awareframework.android.core.model.AwareObject
 
 /**
  * Holds the data of the sensor events

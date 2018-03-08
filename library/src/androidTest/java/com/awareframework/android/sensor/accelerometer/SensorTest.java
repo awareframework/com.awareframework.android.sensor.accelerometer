@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.awareframework.android.sensor.core.model.SensorObserver;
+import com.awareframework.android.core.model.SensorObserver;
 
 import org.junit.After;
 import org.junit.Before;

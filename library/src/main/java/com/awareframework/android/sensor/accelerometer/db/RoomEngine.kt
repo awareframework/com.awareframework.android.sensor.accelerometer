@@ -1,7 +1,7 @@
 package com.awareframework.android.sensor.accelerometer.db
 
 import android.content.Context
-import com.awareframework.android.sensor.core.model.AwareObject
+import com.awareframework.android.core.model.AwareObject
 import com.awareframework.android.sensor.accelerometer.db.room.AccelerometerRoomDatabase
 import com.awareframework.android.sensor.accelerometer.db.room.DeviceRoomEntity
 import com.awareframework.android.sensor.accelerometer.db.room.EventRoomEntity

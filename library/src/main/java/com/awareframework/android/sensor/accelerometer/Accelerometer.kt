@@ -4,9 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import com.awareframework.android.sensor.core.db.Engine
-import com.awareframework.android.sensor.core.model.SensorConfig
-import com.awareframework.android.sensor.core.model.SensorObserver
+import com.awareframework.android.core.db.Engine
+import com.awareframework.android.core.model.SensorConfig
+import com.awareframework.android.core.model.SensorObserver
 
 
 /**

@@ -1,7 +1,7 @@
 package com.awareframework.android.sensor.accelerometer.model
 
 import android.hardware.Sensor
-import com.awareframework.android.sensor.core.model.AwareObject
+import com.awareframework.android.core.model.AwareObject
 
 /**
  * Holds the information about

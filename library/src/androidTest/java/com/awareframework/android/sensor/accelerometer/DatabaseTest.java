@@ -9,7 +9,7 @@ import android.support.test.runner.AndroidJUnit4;
 import com.awareframework.android.sensor.accelerometer.db.DbEngine;
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerDevice;
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent;
-import com.awareframework.android.sensor.core.db.Engine;
+import com.awareframework.android.core.db.Engine;
 
 import org.junit.After;
 import org.junit.Before;

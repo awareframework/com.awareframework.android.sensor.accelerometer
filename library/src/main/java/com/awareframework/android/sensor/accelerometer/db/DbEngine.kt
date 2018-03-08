@@ -1,7 +1,7 @@
 package com.awareframework.android.sensor.accelerometer.db
 
 import android.content.Context
-import com.awareframework.android.sensor.core.db.Engine
+import com.awareframework.android.core.db.Engine
 
 /**
  * Abstract class for specifying the builder that is going to
