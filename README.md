@@ -7,8 +7,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # AWARE Accelerometer
 
-[![Release](https://jitpack.io/v/User/Repo.svg)]
-(https://jitpack.io/#aware-team/aware-accelerometer)
+[![](https://jitpack.io/v/awareframework/com.aware.android.sensor.accelerometer.svg)](https://jitpack.io/#awareframework/com.aware.android.sensor.accelerometer)
+
 
 **This repository is under development and not ready for use yet.**
 
@@ -16,12 +16,20 @@ This repository is a modularized version of the [AWARE](https://github.com/denzi
 
 ## Example usage
 
-In your app `build.gradle` add the dependency to the module.
+In your root `build.gradle` add the jitpack repository.
+```gradle
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+In your app `build.gradle` add the dependency to the accelerometer.
 
 ```gradle
 dependencies {
-    api project(':aware-accelerometer')
-    ...
+    compile 'com.github.awareframework:com.aware.android.sensor.accelerometer:-SNAPSHOT'
 }
 ```
 
