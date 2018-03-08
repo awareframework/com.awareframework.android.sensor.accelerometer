@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.awareframework.android.sensor.accelerometer" >
+
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <application>
+        <service android:name="com.awareframework.android.sensor.accelerometer.AccelerometerSensor"/>
+    </application>
+</manifest>

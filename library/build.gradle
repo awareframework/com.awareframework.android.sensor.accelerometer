@@ -1,0 +1,86 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'com.github.dcendents.android-maven'
+
+project.group = 'com.github.awareframework'
+
+project.ext.name = 'Aware-Android-Accelerometer'
+project.ext.artifactId = "aware-accelerometer"
+project.ext.description = 'Aware accelerometer module'
+project.ext.url = 'https://github.com/awareframework/com.aware.android.sensor.accelerometer'
+
+project.ext.saferoom = System.getenv("saferoom") ?: "0.3.2"
+project.ext.room = System.getenv("saferoom") ?: "1.0.0"
+
+dependencies {
+    api 'com.github.awareframework:com.aware.android.core:-SNAPSHOT'
+
+    // Support Dependencies
+    implementation "com.android.support:appcompat-v7:$support_libs"
+
+    // ROOM
+    implementation "android.arch.persistence.room:runtime:$room"
+    kapt "android.arch.persistence.room:compiler:$room"
+    implementation "com.commonsware.cwac:saferoom:$saferoom"
+
+    // TEST
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+
+    // KOTLIN
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+
+android {
+
+    compileSdkVersion project.ext.compile_sdk
+    buildToolsVersion project.ext.build_tools
+
+    defaultConfig {
+        minSdkVersion project.ext.minimum_sdk
+        targetSdkVersion project.ext.target_sdk
+        versionCode 1
+        versionName "0.0.1"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+// build a jar with source files
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    failOnError  false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+// build a jar with javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
