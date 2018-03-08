@@ -10,11 +10,12 @@ import android.hardware.SensorManager
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
+import com.awareframework.android.core.db.Engine
 import com.awareframework.android.sensor.accelerometer.db.DbEngine
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerDevice
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent
-import com.awareframework.android.core.db.Engine
 import java.util.TimeZone
 import kotlin.collections.ArrayList
 
@@ -38,7 +39,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
     private var sensorThread: HandlerThread? = null
     private var sensorHandler: Handler? = null
-//    private var wakeLock: PowerManager.WakeLock? = null
+    private var wakeLock: PowerManager.WakeLock? = null
 
     private var LAST_VALUES: Array<Float>? = null
     private var LAST_TS: Long = 0
@@ -50,8 +51,6 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
     override fun onCreate() {
         super.onCreate()
-
-//        AUTHORITY = getAuthority()
 
         dbEngine = DbEngine.Builder(applicationContext)
                 .setDbName(CONFIG.dbName)
@@ -67,11 +66,11 @@ class AccelerometerSensor : Service(), SensorEventListener {
         val sensorThread = sensorThread!!
         sensorThread.start()
 
-//        if (CONFIG.wakeLockEnabled) {
-//            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-//            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG)
-//            wakeLock!!.acquire()
-//        }
+        if (CONFIG.wakeLockEnabled) {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG)
+            wakeLock!!.acquire()
+        }
 
         sensorHandler = Handler(sensorThread.looper)
 
@@ -116,16 +115,14 @@ class AccelerometerSensor : Service(), SensorEventListener {
             // skip this event
             return
         }
-
         LAST_TS = event.timestamp
 
-//        if (LAST_VALUES != null && CONFIG.threshold > 0 && Math.abs(event.values[0] - LAST_VALUES!![0]) < CONFIG.threshold
-//                && Math.abs(event.values[1] - LAST_VALUES!![1]) < CONFIG.threshold
-//                && Math.abs(event.values[2] - LAST_VALUES!![2]) < CONFIG.threshold) {
-//            return
-//        }
-
-//        LAST_VALUES = arrayOf(event.values[0], event.values[1], event.values[2])
+        if (LAST_VALUES != null && CONFIG.threshold > 0 && Math.abs(event.values[0] - LAST_VALUES!![0]) < CONFIG.threshold
+                && Math.abs(event.values[1] - LAST_VALUES!![1]) < CONFIG.threshold
+                && Math.abs(event.values[2] - LAST_VALUES!![2]) < CONFIG.threshold) {
+            return
+        }
+        LAST_VALUES = arrayOf(event.values[0], event.values[1], event.values[2])
 
         val currentTime = System.currentTimeMillis()
         val data = AccelerometerEvent()
@@ -168,9 +165,9 @@ class AccelerometerSensor : Service(), SensorEventListener {
         sensorHandler?.removeCallbacksAndMessages(null)
         mSensorManager?.unregisterListener(this, mAccelerometer)
         sensorThread?.quit()
-//        if (CONFIG.wakeLockEnabled) {
-//            wakeLock?.release()
-//        }
+        if (CONFIG.wakeLockEnabled) {
+            wakeLock?.release()
+        }
         dbEngine?.close()
 
         if (CONFIG.debug) Log.d(TAG, "Accelerometer service terminated...")

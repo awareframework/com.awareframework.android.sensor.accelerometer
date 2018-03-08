@@ -1,9 +1,13 @@
 package com.awareframework.android.sensor.accelerometer
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.support.v4.content.ContextCompat
+import android.util.Log
 import com.awareframework.android.core.db.Engine
 import com.awareframework.android.core.model.SensorConfig
 import com.awareframework.android.core.model.SensorObserver
@@ -54,7 +58,6 @@ class Accelerometer private constructor(
              */
             var period: Float = 1f,
 
-            // TODO (sercant): enable if needed after meeting.
             /**
              * Accelerometer threshold (float).  Do not record consecutive points if
              * change in value of all axes is less than this.
@@ -62,6 +65,7 @@ class Accelerometer private constructor(
             var threshold: Float = 0f,
 
             var sensorObserver: SensorObserver? = null,
+
             var wakeLockEnabled: Boolean = true
     ) : SensorConfig(dbName = "aware_accelerometer.db")
 
@@ -94,7 +98,11 @@ class Accelerometer private constructor(
          * @param debug enable/disable logging to Logcat. (default = false)
          */
         fun setDebug(debug: Boolean) = apply { config.debug = debug }
-        //        fun setWakeLock(wakeLock: Boolean) = apply { config.wakeLockEnabled = wakeLock }
+
+        /**
+         * @param wakeLock enable/disable wakelock, permissions needs to be handled by the client.
+         */
+        fun setWakeLock(wakeLock: Boolean) = apply { config.wakeLockEnabled = wakeLock }
 
         /**
          * @param period period of database saves in minutes. (default = 1.0)
@@ -131,12 +139,13 @@ class Accelerometer private constructor(
         this.config = config
         AccelerometerSensor.CONFIG = config
 
-//        if (config.wakeLockEnabled and (ContextCompat.checkSelfPermission(context, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)) {
-//            Log.e(TAG, "Permission for the WAKE_LOCK is not granted!")
-//        } else {
+        if (config.wakeLockEnabled and (ContextCompat.checkSelfPermission(context, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)) {
+            Log.e(TAG, "Permission for the WAKE_LOCK is not granted!")
+            config.wakeLockEnabled = false
+        }
+
         val intent = Intent(context, AccelerometerSensor::class.java)
         context.startService(intent)
-//        }
     }
 
     fun stop() {
