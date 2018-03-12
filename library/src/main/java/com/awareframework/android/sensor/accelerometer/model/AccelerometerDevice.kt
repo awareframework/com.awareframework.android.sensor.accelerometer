@@ -12,6 +12,10 @@ import com.awareframework.android.core.model.AwareObject
  */
 open class AccelerometerDevice : AwareObject {
 
+    companion object {
+        const val TABLE_NAME = "accelerometerDevice"
+    }
+
     var maxRange: Float = 0f
     var minDelay: Float = 0f
     var name: String = ""

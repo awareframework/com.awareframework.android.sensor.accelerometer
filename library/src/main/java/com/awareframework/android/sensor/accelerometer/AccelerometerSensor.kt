@@ -12,8 +12,8 @@ import android.os.HandlerThread
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
+import com.awareframework.android.core.AwareSensor
 import com.awareframework.android.core.db.Engine
-import com.awareframework.android.sensor.accelerometer.db.DbEngine
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerDevice
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent
 import java.util.TimeZone
@@ -26,7 +26,7 @@ import kotlin.collections.ArrayList
  * @author  sercant
  * @date 17/02/2018
  */
-class AccelerometerSensor : Service(), SensorEventListener {
+class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     val TAG = "com.aware.sensor.aclm"
 
@@ -52,7 +52,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
     override fun onCreate() {
         super.onCreate()
 
-        dbEngine = DbEngine.Builder(applicationContext)
+        dbEngine = Engine.Builder(applicationContext)
                 .setDbName(CONFIG.dbName)
                 .setDbType(CONFIG.dbType)
                 .setDbKey(CONFIG.dbKey)
@@ -101,7 +101,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
 
         val device = AccelerometerDevice(CONFIG.deviceId, System.currentTimeMillis(), acc)
 
-        dbEngine?.save(device)
+        dbEngine?.save(device, AccelerometerDevice.TABLE_NAME)
 
         if (CONFIG.debug) Log.d(TAG, "Accelerometer device:" + device.toString())
     }
@@ -136,7 +136,7 @@ class AccelerometerSensor : Service(), SensorEventListener {
         data.accuracy = event.accuracy
         data.label = CONFIG.label
 
-        CONFIG.sensorObserver?.onDataChanged(Accelerometer.DATA_TYPE, data, null)
+        CONFIG.sensorObserver?.onDataChanged("", data, null)
 
         dataBuffer.add(data)
 
@@ -146,11 +146,11 @@ class AccelerometerSensor : Service(), SensorEventListener {
         }
         LAST_SAVE = currentTime
 
-        val dataBuffer = dataBuffer.toTypedArray()
+        val dataBuffer = this.dataBuffer.toTypedArray()
         this.dataBuffer.clear()
 
         try {
-            dbEngine?.save(dataBuffer)
+            dbEngine?.save(dataBuffer, AccelerometerEvent.TABLE_NAME, 0L)
 
             val accelerometerData = Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER)
             sendBroadcast(accelerometerData)

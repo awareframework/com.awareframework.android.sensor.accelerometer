@@ -6,7 +6,8 @@ import android.hardware.SensorManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.awareframework.android.sensor.accelerometer.db.DbEngine;
+import com.awareframework.android.core.model.AwareData;
+import com.awareframework.android.core.model.AwareObject;
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerDevice;
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent;
 import com.awareframework.android.core.db.Engine;
@@ -40,20 +41,20 @@ public class DatabaseTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        engine = new DbEngine.Builder(appContext)
+        engine = new Engine.Builder(appContext)
                 .setDbType(Engine.DatabaseType.NONE)
                 .build();
 
         assertNull(engine);
 
-        engine = new DbEngine.Builder(appContext)
+        engine = new Engine.Builder(appContext)
                 .setDbName("test.db")
                 .setDbType(Engine.DatabaseType.ROOM)
                 .build();
 
         assertNotNull(engine);
 
-        encryptedEngine = new DbEngine.Builder(appContext)
+        encryptedEngine = new Engine.Builder(appContext)
                 .setDbName("test_encrypted.db")
                 .setDbType(Engine.DatabaseType.ROOM)
                 .setDbKey(ENCRYPTION_KEY)
@@ -72,18 +73,18 @@ public class DatabaseTest {
             events.add(new AccelerometerEvent());
         }
 
-        final AccelerometerEvent[] data_buffer = new AccelerometerEvent[events.size()];
+        final AwareObject[] data_buffer = new AccelerometerEvent[events.size()];
         events.toArray(data_buffer);
 
         engine.removeAll().join();
-        engine.save(data_buffer).join();
-        List<AccelerometerEvent> data = engine.getAll(AccelerometerEvent.class);
+        engine.save(data_buffer, AccelerometerEvent.TABLE_NAME).join();
+        List<AwareData> data = engine.getAll(AccelerometerEvent.TABLE_NAME);
         assertEquals(events.size(), data.size());
         engine.close();
 
         encryptedEngine.removeAll().join();
-        encryptedEngine.save(data_buffer).join();
-        List<AccelerometerEvent> data2 = encryptedEngine.getAll(AccelerometerEvent.class);
+        encryptedEngine.save(data_buffer,  AccelerometerEvent.TABLE_NAME).join();
+        List<AwareData> data2 = encryptedEngine.getAll(AccelerometerEvent.TABLE_NAME);
         assertEquals(events.size(), data2.size());
         encryptedEngine.close();
     }
@@ -99,17 +100,17 @@ public class DatabaseTest {
         AccelerometerDevice device = new AccelerometerDevice("", System.currentTimeMillis(), mAccelerometer);
 
         engine.removeAll().join();
-        engine.save(device).join();
+        engine.save(device, AccelerometerDevice.TABLE_NAME, 0L).join();
 
-        List<AccelerometerDevice> savedDevice = engine.getAll(AccelerometerDevice.class);
+        List<AwareData> savedDevice = engine.getAll(AccelerometerDevice.TABLE_NAME);
         assertEquals(1, savedDevice.size());
 
         // TODO (sercant): we should also check if the entries are same here.
         String uuid = UUID.randomUUID().toString();
         device.setDeviceId(uuid);
-        engine.save(device).join();
+        engine.save(device, AccelerometerDevice.TABLE_NAME, 0L).join();
 
-        savedDevice = engine.getAll(AccelerometerDevice.class);
+        savedDevice = engine.getAll(AccelerometerDevice.TABLE_NAME);
         assertEquals(1, savedDevice.size());
         assertEquals(device.getDeviceId(), savedDevice.get(0).getDeviceId());
     }

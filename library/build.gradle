@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
 apply plugin: 'com.github.dcendents.android-maven'
 
 project.group = 'com.github.awareframework'
@@ -11,19 +10,11 @@ project.ext.artifactId = "aware-accelerometer"
 project.ext.description = 'Aware accelerometer module'
 project.ext.url = 'https://github.com/awareframework/com.aware.android.sensor.accelerometer'
 
-project.ext.saferoom = System.getenv("saferoom") ?: "0.3.2"
-project.ext.room = System.getenv("saferoom") ?: "1.0.0"
-
 dependencies {
-    api 'com.github.awareframework:com.aware.android.core:-SNAPSHOT'
+    api 'com.github.awareframework:com.aware.android.core:master-SNAPSHOT'
 
     // Support Dependencies
     implementation "com.android.support:appcompat-v7:$support_libs"
-
-    // ROOM
-    implementation "android.arch.persistence.room:runtime:$room"
-    kapt "android.arch.persistence.room:compiler:$room"
-    implementation "com.commonsware.cwac:saferoom:$saferoom"
 
     // TEST
     testImplementation 'junit:junit:4.12'

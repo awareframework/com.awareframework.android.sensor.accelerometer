@@ -10,6 +10,10 @@ import com.awareframework.android.core.model.AwareObject
  */
 open class AccelerometerEvent : AwareObject {
 
+    companion object {
+        const val TABLE_NAME = "accelerometerEvent"
+    }
+
     var x: Float = 0f
     var y: Float = 0f
     var z: Float = 0f
