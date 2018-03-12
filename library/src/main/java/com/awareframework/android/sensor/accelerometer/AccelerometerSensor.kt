@@ -32,6 +32,15 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     companion object {
         internal var CONFIG: Accelerometer.AccelerometerConfig = Accelerometer.defaultConfig
+
+        internal fun startService(context: Context) {
+            val intent = Intent(context, AccelerometerSensor::class.java)
+            context.startService(intent)
+        }
+
+        internal fun stopService(context: Context) {
+            context.stopService(Intent(context, AccelerometerSensor::class.java))
+        }
     }
 
     private var mSensorManager: SensorManager? = null
@@ -153,8 +162,9 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         try {
             dbEngine?.save(dataBuffer, AccelerometerEvent.TABLE_NAME)
 
-            val accelerometerData = Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER)
-            sendBroadcast(accelerometerData)
+            //TODO (sercant): enable later
+//            val accelerometerData = Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER)
+//            sendBroadcast(accelerometerData)
         } catch (e: Exception) {
             if (CONFIG.debug) Log.d(TAG, e.message)
         }
@@ -176,5 +186,29 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     override fun onBind(intent: Intent): IBinder? {
         return null
+    }
+
+    class AccelerometerBroadcastReceiver : AwareSensor.SensorBroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (context == null)
+                return
+
+            when (intent?.action) {
+                AwareSensor.SensorBroadcastReceiver.SENSOR_START_ENABLED -> {
+                    // TODO (sercant): if this sensor is enabled, start
+                }
+
+                Accelerometer.ACTION_AWARE_ACCELEROMETER_START -> startService(context)
+
+                AwareSensor.SensorBroadcastReceiver.SENSOR_STOP_ALL,
+                Accelerometer.ACTION_AWARE_ACCELEROMETER_STOP -> {
+                    stopService(context)
+                }
+
+                Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL -> {
+                    AccelerometerSensor.CONFIG.label = intent.getStringExtra(Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL)
+                }
+            }
+        }
     }
 }

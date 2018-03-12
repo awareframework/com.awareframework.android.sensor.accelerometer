@@ -5,5 +5,15 @@
 
     <application>
         <service android:name="com.awareframework.android.sensor.accelerometer.AccelerometerSensor"/>
+
+        <receiver android:name=".AccelerometerSensor$AccelerometerBroadcastReceiver"  android:exported="true">
+            <intent-filter>
+                <action android:name="com.aware.android.sensor.accelerometer.SENSOR_START"/>
+                <action android:name="com.aware.android.sensor.accelerometer.SENSOR_STOP"/>
+                <action android:name="com.aware.android.sensor.accelerometer.SET_LABEL"/>
+                <action android:name="com.aware.android.sensor.SENSOR_START"/>
+                <action android:name="com.aware.android.sensor.SENSOR_STOP"/>
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

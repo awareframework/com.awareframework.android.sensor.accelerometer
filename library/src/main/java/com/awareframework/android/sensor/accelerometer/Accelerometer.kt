@@ -1,16 +1,15 @@
 package com.awareframework.android.sensor.accelerometer
 
 import android.Manifest
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.awareframework.android.core.db.Engine
 import com.awareframework.android.core.model.SensorConfig
 import com.awareframework.android.core.model.SensorObserver
+import com.awareframework.android.sensor.accelerometer.AccelerometerSensor.Companion.startService
+import com.awareframework.android.sensor.accelerometer.AccelerometerSensor.Companion.stopService
 
 
 /**
@@ -21,19 +20,13 @@ import com.awareframework.android.core.model.SensorObserver
  */
 class Accelerometer private constructor(
         private var context: Context,
-        config: AccelerometerConfig = defaultConfig
-) : BroadcastReceiver() {
+        config: AccelerometerConfig = AccelerometerConfig()
+) {
 
     companion object {
-        const val ACTION_AWARE_ACCELEROMETER_START = "ACTION_AWARE_ACCELEROMETER_START"
-        const val ACTION_AWARE_ACCELEROMETER_STOP = "ACTION_AWARE_ACCELEROMETER_STOP"
-
-        const val ACTION_AWARE_ACCELEROMETER = "ACTION_AWARE_ACCELEROMETER"
-
-        const val ACTION_AWARE_ACCELEROMETER_LABEL = "ACTION_AWARE_ACCELEROMETER_LABEL"
-        const val EXTRA_LABEL = "label"
-
-        const val DATA_TYPE = "DATA_ACCELEROMETER"
+        const val ACTION_AWARE_ACCELEROMETER_START = "com.aware.android.sensor.accelerometer.SENSOR_START"
+        const val ACTION_AWARE_ACCELEROMETER_STOP = "com.aware.android.sensor.accelerometer.SENSOR_STOP"
+        const val ACTION_AWARE_ACCELEROMETER_LABEL = "com.aware.android.sensor.accelerometer.SET_LABEL"
 
         val defaultConfig: AccelerometerConfig = AccelerometerConfig()
     }
@@ -125,12 +118,6 @@ class Accelerometer private constructor(
         fun build(): Accelerometer = Accelerometer(context, config)
     }
 
-    init {
-        // TODO WARN (sercant): this will leak!! What should we do if we want to start and stop using
-        // TODO WARN (sercant): receivers?
-        setLabelReceiver(true)
-    }
-
     fun start() {
         start(config)
     }
@@ -144,32 +131,10 @@ class Accelerometer private constructor(
             config.wakeLockEnabled = false
         }
 
-        val intent = Intent(context, AccelerometerSensor::class.java)
-        context.startService(intent)
+        startService(context)
     }
 
     fun stop() {
-        context.stopService(Intent(context, AccelerometerSensor::class.java))
-    }
-
-    private fun setLabelReceiver(on: Boolean) {
-        if (on) {
-            val filter = IntentFilter()
-            filter.addAction(ACTION_AWARE_ACCELEROMETER_LABEL)
-
-            context.registerReceiver(this, filter)
-        } else {
-            context.unregisterReceiver(this)
-        }
-    }
-
-    override fun onReceive(context: Context?, intent: Intent?) {
-        when (intent?.action) {
-            ACTION_AWARE_ACCELEROMETER_START -> this.start()
-
-            ACTION_AWARE_ACCELEROMETER_STOP -> this.stop()
-
-            ACTION_AWARE_ACCELEROMETER_LABEL -> config.label = intent.getStringExtra(EXTRA_LABEL)
-        }
+        stopService(context)
     }
 }
