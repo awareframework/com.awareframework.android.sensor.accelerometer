@@ -101,7 +101,8 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
         val device = AccelerometerDevice(CONFIG.deviceId, System.currentTimeMillis(), acc)
 
-        dbEngine?.save(device, AccelerometerDevice.TABLE_NAME)
+        // Save with id = 0L so there is only one entry on the table.
+        dbEngine?.save(device, AccelerometerDevice.TABLE_NAME, 0L)
 
         if (CONFIG.debug) Log.d(TAG, "Accelerometer device:" + device.toString())
     }
@@ -150,7 +151,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         this.dataBuffer.clear()
 
         try {
-            dbEngine?.save(dataBuffer, AccelerometerEvent.TABLE_NAME, 0L)
+            dbEngine?.save(dataBuffer, AccelerometerEvent.TABLE_NAME)
 
             val accelerometerData = Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER)
             sendBroadcast(accelerometerData)
