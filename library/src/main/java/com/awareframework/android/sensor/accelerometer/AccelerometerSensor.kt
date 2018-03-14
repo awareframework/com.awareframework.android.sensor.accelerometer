@@ -56,8 +56,6 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     private val dataBuffer = ArrayList<AccelerometerEvent>()
 
-    private var dbEngine: Engine? = null
-
     override fun onCreate() {
         super.onCreate()
 
