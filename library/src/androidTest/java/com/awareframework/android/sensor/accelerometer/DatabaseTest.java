@@ -80,13 +80,11 @@ public class DatabaseTest {
         engine.save(data_buffer, AccelerometerEvent.TABLE_NAME).join();
         List<AwareData> data = engine.getAll(AccelerometerEvent.TABLE_NAME);
         assertEquals(events.size(), data.size());
-        engine.close();
 
         encryptedEngine.removeAll().join();
-        encryptedEngine.save(data_buffer,  AccelerometerEvent.TABLE_NAME).join();
+        encryptedEngine.save(data_buffer, AccelerometerEvent.TABLE_NAME).join();
         List<AwareData> data2 = encryptedEngine.getAll(AccelerometerEvent.TABLE_NAME);
         assertEquals(events.size(), data2.size());
-        encryptedEngine.close();
     }
 
     @Test
