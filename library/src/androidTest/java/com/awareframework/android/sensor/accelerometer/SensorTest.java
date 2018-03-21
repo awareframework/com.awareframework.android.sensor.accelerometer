@@ -4,14 +4,10 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.awareframework.android.core.model.SensorObserver;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -38,7 +34,7 @@ public class SensorTest {
 
         sensor = new Accelerometer.Builder(appContext)
                 .setDebug(true)
-                .setDeviceId(UUID.randomUUID().toString())
+//                .setDeviceId(UUID.randomUUID().toString())
                 .setSensorObserver((type, data, error) -> wasAbleToLogEvents = true)
 //                .setBufferSize(300)
 //                .setBufferTimeout(1000)

@@ -63,7 +63,32 @@ class Accelerometer private constructor(
             var wakeLockEnabled: Boolean = true
     ) : SensorConfig(dbPath = "aware_accelerometer")
 
-    class Builder(context: Context) : SensorConfig.Builder<AccelerometerConfig>(context) {
+    class Builder(val context: Context) {
+
+        /**
+         * @param label collected data will be labeled accordingly. (default = "")
+         */
+        fun setLabel(label: String) = apply { config.label = label }
+
+        /**
+         * @param debug enable/disable logging to Logcat. (default = false)
+         */
+        fun setDebug(debug: Boolean) = apply { config.debug = debug }
+
+        /**
+         * @param key encryption key for the database. (default = no encryption)
+         */
+        fun setDatabaseEncryptionKey(key: String) = apply { config.dbEncryptionKey = key }
+
+        /**
+         * @param host host for syncing the database. (default = null)
+         */
+        fun setDatabaseHost(host: String) = apply { config.dbHost = host }
+
+        /**
+         * @param type which db engine to use for saving data. (default = NONE)
+         */
+        fun setDatabaseType(type: Engine.DatabaseType) = apply { config.dbType = type }
 
         private val config: AccelerometerConfig = AccelerometerConfig()
 
@@ -86,7 +111,7 @@ class Accelerometer private constructor(
 //        /**
 //         * @param deviceId id of the device that will be associated with the events and the sensor. (default = "")
 //         */
-//        fun setDeviceId(deviceId: String) = apply { config.deviceId = deviceId }
+//        fun setDeviceId(deviceId: String) = apply { CONFIG.deviceId = deviceId }
 
         /**
          * @param wakeLock enable/disable wakelock, permissions needs to be handled by the client.
@@ -97,10 +122,6 @@ class Accelerometer private constructor(
          * Returns the accelerometer with the built configuration.
          */
         fun build(): Accelerometer = Accelerometer(context, config)
-
-        override fun getConfig(): AccelerometerConfig {
-            return config
-        }
     }
 
     override fun start() {
