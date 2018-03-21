@@ -42,22 +42,22 @@ public class DatabaseTest {
         Context appContext = InstrumentationRegistry.getTargetContext();
 
         engine = new Engine.Builder(appContext)
-                .setDbType(Engine.DatabaseType.NONE)
+                .setType(Engine.DatabaseType.NONE)
                 .build();
 
         assertNull(engine);
 
         engine = new Engine.Builder(appContext)
-                .setDbName("test.db")
-                .setDbType(Engine.DatabaseType.ROOM)
+                .setPath("test.db")
+                .setType(Engine.DatabaseType.ROOM)
                 .build();
 
         assertNotNull(engine);
 
         encryptedEngine = new Engine.Builder(appContext)
-                .setDbName("test_encrypted.db")
-                .setDbType(Engine.DatabaseType.ROOM)
-                .setDbKey(ENCRYPTION_KEY)
+                .setPath("test_encrypted.db")
+                .setType(Engine.DatabaseType.ROOM)
+                .setEncryptionKey(ENCRYPTION_KEY)
                 .build();
 
         assertNotNull(engine);

@@ -60,9 +60,10 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         super.onCreate()
 
         dbEngine = Engine.Builder(applicationContext)
-                .setDbName(CONFIG.dbName)
-                .setDbType(CONFIG.dbType)
-                .setDbKey(CONFIG.dbKey)
+                .setPath(CONFIG.dbPath)
+                .setType(CONFIG.dbType)
+                .setEncryptionKey(CONFIG.dbEncryptionKey)
+                .setHost(CONFIG.dbHost)
                 .build()
 
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -93,11 +94,11 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         } else {
             saveAccelerometerDevice(mAccelerometer)
 
-            val samplingPeriodUs = if(CONFIG.frequency > 0) 1000000 / CONFIG.frequency else 0
+            val samplingPeriodUs = if(CONFIG.interval > 0) 1000000 / CONFIG.interval else 0
             mSensorManager!!.registerListener(this, mAccelerometer, samplingPeriodUs, sensorHandler)
             LAST_SAVE = System.currentTimeMillis()
 
-            if (CONFIG.debug) Log.d(TAG, "Accelerometer service active: ${CONFIG.frequency} ms")
+            if (CONFIG.debug) Log.d(TAG, "Accelerometer service active: ${CONFIG.interval} ms")
         }
 
         return Service.START_STICKY
@@ -119,7 +120,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (event.timestamp < LAST_TS + CONFIG.frequency / 1000) {
+        if (event.timestamp < LAST_TS + CONFIG.interval / 1000) {
             // skip this event
             return
         }
