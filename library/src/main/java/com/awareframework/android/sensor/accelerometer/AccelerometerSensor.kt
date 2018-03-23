@@ -14,6 +14,7 @@ import android.os.PowerManager
 import android.util.Log
 import com.awareframework.android.core.AwareSensor
 import com.awareframework.android.core.db.Engine
+import com.awareframework.android.core.db.model.DbSyncConfig
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerDevice
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent
 import java.util.TimeZone
@@ -168,6 +169,11 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         } catch (e: Exception) {
             if (CONFIG.debug) Log.d(TAG, e.message)
         }
+    }
+
+    override fun onSync(intent: Intent?) {
+        dbEngine?.startSync(AccelerometerEvent.TABLE_NAME)
+        dbEngine?.startSync(AccelerometerDevice.TABLE_NAME, DbSyncConfig(removeAfterSync = false))
     }
 
     override fun onDestroy() {
