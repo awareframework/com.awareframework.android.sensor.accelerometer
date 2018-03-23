@@ -29,6 +29,7 @@ import kotlin.collections.ArrayList
 class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     val TAG = "com.aware.sensor.aclm"
+    val WAKELOCK_TAG = "awareframework:accelerometer"
 
     companion object {
         internal var CONFIG: Accelerometer.AccelerometerConfig = Accelerometer.defaultConfig
@@ -76,7 +77,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
         if (CONFIG.wakeLockEnabled) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG)
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_TAG)
             wakeLock!!.acquire()
         }
 
