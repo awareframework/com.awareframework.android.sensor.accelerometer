@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.awareframework.android.core.model.ISensorController
 import com.awareframework.android.core.db.Engine
+import com.awareframework.android.core.manager.DbSyncManager
 import com.awareframework.android.core.model.SensorConfig
 import com.awareframework.android.core.model.SensorObserver
 import com.awareframework.android.sensor.accelerometer.AccelerometerSensor.Companion.startService
@@ -61,7 +62,8 @@ class Accelerometer private constructor(
             var sensorObserver: SensorObserver? = null,
 
             var wakeLockEnabled: Boolean = true
-    ) : SensorConfig(dbPath = "aware_accelerometer")
+    ) : SensorConfig(dbPath = "aware_accelerometer", enabled = true)
+    // Since we are intentionally building this sensor, it makes sense that the sensor comes as enabled by default.
 
     class Builder(val context: Context) {
 
@@ -144,19 +146,19 @@ class Accelerometer private constructor(
         stopService(context)
     }
 
-    override fun sync() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sync(force: Boolean) {
+        DbSyncManager.syncDb(force)
     }
 
-    override fun isEnabled() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun isEnabled() = config.enabled
 
     override fun enable() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // TODO (sercant): in this case do we start the sensor if it's not running?
+        config.enabled = true
     }
 
     override fun disable() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // TODO (sercant): in this case do we stop the sensor if it's running?
+        config.enabled = false
     }
 }
