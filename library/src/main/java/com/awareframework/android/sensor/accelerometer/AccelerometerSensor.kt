@@ -3,6 +3,7 @@ package com.awareframework.android.sensor.accelerometer
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -52,6 +53,8 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
     private var sensorHandler: Handler? = null
     private var wakeLock: PowerManager.WakeLock? = null
 
+    private lateinit var accelerometerSpecificReceiver: AccelerometerSpecificReceiver
+
     private var LAST_VALUES: Array<Float>? = null
     private var LAST_TS: Long = 0
     private var LAST_SAVE: Long = 0
@@ -83,6 +86,9 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         }
 
         sensorHandler = Handler(sensorThread.looper)
+
+        accelerometerSpecificReceiver = AccelerometerSpecificReceiver(this)
+        applicationContext.registerReceiver(accelerometerSpecificReceiver, accelerometerSpecificReceiver.getIntentFilter())
 
         if (CONFIG.debug) Log.d(TAG, "Accelerometer service created.")
     }
@@ -186,6 +192,9 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
             wakeLock?.release()
         }
         dbEngine?.close()
+        dbEngine = null
+
+        applicationContext.unregisterReceiver(accelerometerSpecificReceiver)
 
         if (CONFIG.debug) Log.d(TAG, "Accelerometer service terminated...")
     }
@@ -201,12 +210,29 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
             when (intent?.action) {
                 AwareSensor.SensorBroadcastReceiver.SENSOR_START_ENABLED -> {
-                    // TODO (sercant): if this sensor is enabled, start
+                    if (CONFIG.enabled) {
+                        startService(context)
+                    }
                 }
 
-                Accelerometer.ACTION_AWARE_ACCELEROMETER_START -> startService(context)
+                AwareSensor.SensorBroadcastReceiver.SENSOR_STOP_ALL -> {
+                    stopService(context)
+                }
+            }
+        }
+    }
 
-                AwareSensor.SensorBroadcastReceiver.SENSOR_STOP_ALL,
+    class AccelerometerSpecificReceiver(val sensor: AccelerometerSensor) : AwareSensor.SensorBroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (context == null)
+                return
+
+            when (intent?.action) {
+
+                Accelerometer.ACTION_AWARE_ACCELEROMETER_START -> {
+                    startService(context)
+                }
+
                 Accelerometer.ACTION_AWARE_ACCELEROMETER_STOP -> {
                     stopService(context)
                 }
@@ -214,7 +240,21 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
                 Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL -> {
                     AccelerometerSensor.CONFIG.label = intent.getStringExtra(Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL)
                 }
+
+                Accelerometer.ACTION_AWARE_ACCELEROMETER_SYNC -> {
+                    sensor.onSync(intent)
+                }
             }
+        }
+
+        fun getIntentFilter() : IntentFilter {
+            val intentFilter = IntentFilter()
+            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_START)
+            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_STOP)
+            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL)
+            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_SYNC)
+
+            return intentFilter
         }
     }
 }

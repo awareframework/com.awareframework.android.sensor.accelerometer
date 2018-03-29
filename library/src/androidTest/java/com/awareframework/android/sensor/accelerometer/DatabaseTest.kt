@@ -6,6 +6,7 @@ import android.hardware.SensorManager
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
 import com.awareframework.android.core.db.Engine
+import com.awareframework.android.core.db.room.AwareDataEntity
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerDevice
 import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent
 import junit.framework.TestCase.*
@@ -53,6 +54,33 @@ class DatabaseTest {
                 .build()
 
         assertNotNull(engine)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun testDeleteData() {
+        // Context of the app under test.
+        val appContext = InstrumentationRegistry.getTargetContext()
+
+        val engine = engine!!
+
+        // Create some default events
+        val events = ArrayList<AccelerometerEvent>()
+        for (i in 0..99) {
+            events.add(AccelerometerEvent())
+        }
+
+        val data_buffer: Array<AccelerometerEvent> = events.toTypedArray()
+        engine.removeAll().join()
+        engine.save(data_buffer, AccelerometerEvent.TABLE_NAME).join()
+
+        val data = engine.get(AccelerometerEvent.TABLE_NAME, 10)
+        assertEquals(10, data!!.size.toLong())
+
+        engine.remove(data).join()
+
+        val afterRemoveData = engine.get(AccelerometerEvent.TABLE_NAME, 100)
+        assertEquals(90, afterRemoveData!!.size.toLong())
     }
 
     @Test

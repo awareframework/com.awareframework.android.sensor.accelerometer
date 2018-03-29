@@ -2,12 +2,12 @@ package com.awareframework.android.sensor.accelerometer
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.awareframework.android.core.model.ISensorController
 import com.awareframework.android.core.db.Engine
-import com.awareframework.android.core.manager.DbSyncManager
 import com.awareframework.android.core.model.SensorConfig
 import com.awareframework.android.core.model.SensorObserver
 import com.awareframework.android.sensor.accelerometer.AccelerometerSensor.Companion.startService
@@ -21,7 +21,7 @@ import com.awareframework.android.sensor.accelerometer.AccelerometerSensor.Compa
  * @date 19/02/2018
  */
 class Accelerometer private constructor(
-        private var context: Context,
+        private val context: Context,
         config: AccelerometerConfig = AccelerometerConfig()
 ) : ISensorController {
 
@@ -29,6 +29,7 @@ class Accelerometer private constructor(
         const val ACTION_AWARE_ACCELEROMETER_START = "com.aware.android.sensor.accelerometer.SENSOR_START"
         const val ACTION_AWARE_ACCELEROMETER_STOP = "com.aware.android.sensor.accelerometer.SENSOR_STOP"
         const val ACTION_AWARE_ACCELEROMETER_LABEL = "com.aware.android.sensor.accelerometer.SET_LABEL"
+        const val ACTION_AWARE_ACCELEROMETER_SYNC = "com.aware.android.sensor.accelerometer.SYNC"
 
         val defaultConfig: AccelerometerConfig = AccelerometerConfig()
     }
@@ -59,8 +60,15 @@ class Accelerometer private constructor(
              */
             var threshold: Float = 0f,
 
+            /**
+             * For real-time observation of the sensor data collection.
+             */
             var sensorObserver: SensorObserver? = null,
 
+            /**
+             * Should we keep a wake lock.
+             * NOTE: Any related permission handling should be taken care of beforehand.
+             */
             var wakeLockEnabled: Boolean = true
     ) : SensorConfig(dbPath = "aware_accelerometer", enabled = true)
     // Since we are intentionally building this sensor, it makes sense that the sensor comes as enabled by default.
@@ -147,7 +155,11 @@ class Accelerometer private constructor(
     }
 
     override fun sync(force: Boolean) {
-        DbSyncManager.syncDb(force)
+        // TODO (sercant): is there a case that this is not forced since the logic is in DbSyncManager.
+        val intent = Intent()
+        intent.action = ACTION_AWARE_ACCELEROMETER_SYNC
+
+        context.sendBroadcast(intent)
     }
 
     override fun isEnabled() = config.enabled
