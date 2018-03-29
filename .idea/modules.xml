@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/accelerometer.iml" filepath="$PROJECT_DIR$/accelerometer.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-accelerometer.iml" filepath="$PROJECT_DIR$/android-accelerometer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/example/example.iml" filepath="$PROJECT_DIR$/example/example.iml" />
       <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
     </modules>
   </component>
