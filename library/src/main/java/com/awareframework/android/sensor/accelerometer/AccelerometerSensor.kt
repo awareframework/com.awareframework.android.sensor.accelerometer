@@ -30,10 +30,10 @@ import kotlin.collections.ArrayList
  */
 class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
-    val TAG = "com.aware.sensor.aclm"
-    val WAKELOCK_TAG = "awareframework:accelerometer"
-
     companion object {
+        const val TAG = "com.aware.sensor.aclm"
+        const val WAKELOCK_TAG = "awareframework:accelerometer"
+
         internal var CONFIG: Accelerometer.AccelerometerConfig = Accelerometer.defaultConfig
 
         internal fun startService(context: Context) {
@@ -55,9 +55,9 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     private lateinit var accelerometerSpecificReceiver: AccelerometerSpecificReceiver
 
-    private var LAST_VALUES: Array<Float>? = null
-    private var LAST_TS: Long = 0
-    private var LAST_SAVE: Long = 0
+    private var lastValues: Array<Float>? = null
+    private var lastTimestamp: Long = 0
+    private var lastSavedAt: Long = 0
 
     private val dataBuffer = ArrayList<AccelerometerEvent>()
 
@@ -104,7 +104,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
             val samplingPeriodUs = if(CONFIG.interval > 0) 1000000 / CONFIG.interval else 0
             mSensorManager!!.registerListener(this, mAccelerometer, samplingPeriodUs, sensorHandler)
-            LAST_SAVE = System.currentTimeMillis()
+            lastSavedAt = System.currentTimeMillis()
 
             if (CONFIG.debug) Log.d(TAG, "Accelerometer service active: ${CONFIG.interval} ms")
         }
@@ -128,18 +128,18 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (event.timestamp < LAST_TS + CONFIG.interval / 1000) {
+        if (event.timestamp < lastTimestamp + CONFIG.interval / 1000) {
             // skip this event
             return
         }
-        LAST_TS = event.timestamp
+        lastTimestamp = event.timestamp
 
-        if (LAST_VALUES != null && CONFIG.threshold > 0 && Math.abs(event.values[0] - LAST_VALUES!![0]) < CONFIG.threshold
-                && Math.abs(event.values[1] - LAST_VALUES!![1]) < CONFIG.threshold
-                && Math.abs(event.values[2] - LAST_VALUES!![2]) < CONFIG.threshold) {
+        if (lastValues != null && CONFIG.threshold > 0 && Math.abs(event.values[0] - lastValues!![0]) < CONFIG.threshold
+                && Math.abs(event.values[1] - lastValues!![1]) < CONFIG.threshold
+                && Math.abs(event.values[2] - lastValues!![2]) < CONFIG.threshold) {
             return
         }
-        LAST_VALUES = arrayOf(event.values[0], event.values[1], event.values[2])
+        lastValues = arrayOf(event.values[0], event.values[1], event.values[2])
 
         val currentTime = System.currentTimeMillis()
         val data = AccelerometerEvent()
@@ -157,11 +157,11 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
         dataBuffer.add(data)
 
-        if (currentTime < LAST_SAVE + CONFIG.period * 60000) { // convert minute to ms
+        if (currentTime < lastSavedAt + CONFIG.period * 60000) { // convert minute to ms
             // not ready to save yet
             return
         }
-        LAST_SAVE = currentTime
+        lastSavedAt = currentTime
 
         val dataBuffer = this.dataBuffer.toTypedArray()
         this.dataBuffer.clear()
@@ -224,8 +224,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     class AccelerometerSpecificReceiver(val sensor: AccelerometerSensor) : AwareSensor.SensorBroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (context == null)
-                return
+            context ?: return
 
             when (intent?.action) {
 
