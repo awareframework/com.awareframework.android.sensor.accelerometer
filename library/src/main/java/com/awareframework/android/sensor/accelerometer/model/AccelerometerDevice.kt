@@ -10,47 +10,28 @@ import com.awareframework.android.core.model.AwareObject
  * @author  sercant
  * @date 17/02/2018
  */
-open class AccelerometerDevice : AwareObject {
+open class AccelerometerDevice(
+        deviceId: String = "",
+        timestamp: Long = 0L,
+        var maxRange: Float = 0f,
+        var minDelay: Float = 0f,
+        var name: String = "",
+        var power: Float = 0f, // in Ma
+        var resolution: Float = 0f,
+        var type: String = "",
+        var vendor: String = "",
+        var version: String = ""
+) : AwareObject(
+        timestamp = timestamp,
+        deviceId = deviceId
+) {
 
     companion object {
         const val TABLE_NAME = "accelerometerDevice"
     }
 
-    var maxRange: Float = 0f
-    var minDelay: Float = 0f
-    var name: String = ""
-    var power: Float = 0f // in Ma
-    var resolution: Float = 0f
-    var type: String = ""
-    var vendor: String = ""
-    var version: String = ""
-
-    constructor() : super()
-    constructor(
-            deviceId: String,
-            timestamp: Long,
-            maxRange: Float,
-            minDelay: Float,
-            name: String,
-            power: Float, // in Ma
-            resolution: Float,
-            type: String,
-            vendor: String,
-            version: String) : super() {
-        this.deviceId = deviceId
-        this.timestamp = timestamp
-        this.maxRange = maxRange
-        this.minDelay = minDelay
-        this.name = name
-        this.power = power
-        this.resolution = resolution
-        this.type = type
-        this.vendor = vendor
-        this.version = version
-    }
-
-    constructor(device_id: String, timestamp: Long, sensor: Sensor) : this(
-            device_id,
+    constructor(deviceId: String, timestamp: Long, sensor: Sensor) : this(
+            deviceId,
             timestamp,
             sensor.maximumRange,
             sensor.minDelay.toFloat(),

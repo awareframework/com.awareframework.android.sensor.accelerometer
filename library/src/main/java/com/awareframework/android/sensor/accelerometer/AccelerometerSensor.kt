@@ -21,6 +21,9 @@ import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent
 import java.util.TimeZone
 import kotlin.collections.ArrayList
 
+private fun logd(msg: String) { if (AccelerometerSensor.CONFIG.debug) Log.d(AccelerometerSensor.TAG, msg) }
+private fun logw(msg: String) { Log.w(AccelerometerSensor.TAG, msg) }
+
 /**
  * Implementation of Aware accelerometer in kotlin as a standalone service.
  * Utilizes db.Engine to support different kinds of databases.
@@ -46,11 +49,11 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         }
     }
 
-    private var mSensorManager: SensorManager? = null
+    private lateinit var mSensorManager: SensorManager
     private var mAccelerometer: Sensor? = null
 
-    private var sensorThread: HandlerThread? = null
-    private var sensorHandler: Handler? = null
+    private lateinit var sensorThread: HandlerThread
+    private lateinit var sensorHandler: Handler
     private var wakeLock: PowerManager.WakeLock? = null
 
     private lateinit var accelerometerSpecificReceiver: AccelerometerSpecificReceiver
@@ -72,11 +75,9 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
                 .build()
 
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        mAccelerometer = mSensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
         sensorThread = HandlerThread(TAG)
-
-        val sensorThread = sensorThread!!
         sensorThread.start()
 
         if (CONFIG.wakeLockEnabled) {
@@ -90,23 +91,23 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         accelerometerSpecificReceiver = AccelerometerSpecificReceiver(this)
         applicationContext.registerReceiver(accelerometerSpecificReceiver, accelerometerSpecificReceiver.getIntentFilter())
 
-        if (CONFIG.debug) Log.d(TAG, "Accelerometer service created.")
+        logd("Accelerometer service created.")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
         if (mAccelerometer == null) {
-            if (CONFIG.debug) Log.w(TAG, "This device does not have an accelerometer!")
+            logw("This device does not have an accelerometer!")
             stopSelf()
         } else {
             saveAccelerometerDevice(mAccelerometer)
 
             val samplingPeriodUs = if(CONFIG.interval > 0) 1000000 / CONFIG.interval else 0
-            mSensorManager!!.registerListener(this, mAccelerometer, samplingPeriodUs, sensorHandler)
+            mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs, sensorHandler)
             lastSavedAt = System.currentTimeMillis()
 
-            if (CONFIG.debug) Log.d(TAG, "Accelerometer service active: ${CONFIG.interval} ms")
+            logd("Accelerometer service active: ${CONFIG.interval} hz")
         }
 
         return Service.START_STICKY
@@ -120,7 +121,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         // Save with id = 0L so there is only one entry on the table.
         dbEngine?.save(device, AccelerometerDevice.TABLE_NAME, 0L)
 
-        if (CONFIG.debug) Log.d(TAG, "Accelerometer device:" + device.toString())
+        logd("Saved accelerometer device: \n" + device.toString())
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
@@ -134,7 +135,8 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         }
         lastTimestamp = event.timestamp
 
-        if (lastValues != null && CONFIG.threshold > 0 && Math.abs(event.values[0] - lastValues!![0]) < CONFIG.threshold
+        if (lastValues != null && CONFIG.threshold > 0
+                && Math.abs(event.values[0] - lastValues!![0]) < CONFIG.threshold
                 && Math.abs(event.values[1] - lastValues!![1]) < CONFIG.threshold
                 && Math.abs(event.values[2] - lastValues!![2]) < CONFIG.threshold) {
             return
@@ -167,13 +169,15 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         this.dataBuffer.clear()
 
         try {
+            logd("Saving buffer to database.")
             dbEngine?.save(dataBuffer, AccelerometerEvent.TABLE_NAME)
 
             //TODO (sercant): enable later
 //            val accelerometerData = Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER)
 //            sendBroadcast(accelerometerData)
         } catch (e: Exception) {
-            if (CONFIG.debug) Log.d(TAG, e.message)
+            e.message ?: logw(e.message!!)
+            e.printStackTrace()
         }
     }
 
@@ -185,9 +189,9 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
 
-        sensorHandler?.removeCallbacksAndMessages(null)
-        mSensorManager?.unregisterListener(this, mAccelerometer)
-        sensorThread?.quit()
+        sensorHandler.removeCallbacksAndMessages(null)
+        mSensorManager.unregisterListener(this, mAccelerometer)
+        sensorThread.quit()
         if (CONFIG.wakeLockEnabled) {
             wakeLock?.release()
         }
@@ -196,7 +200,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
         applicationContext.unregisterReceiver(accelerometerSpecificReceiver)
 
-        if (CONFIG.debug) Log.d(TAG, "Accelerometer service terminated...")
+        logd("Accelerometer service terminated...")
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -205,17 +209,21 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     class AccelerometerBroadcastReceiver : AwareSensor.SensorBroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (context == null)
-                return
+            context ?: return
+
+            logd("Sensor broadcast received. action: " + intent?.action)
 
             when (intent?.action) {
                 AwareSensor.SensorBroadcastReceiver.SENSOR_START_ENABLED -> {
+                    logd("Sensor enabled: " + CONFIG.enabled)
+
                     if (CONFIG.enabled) {
                         startService(context)
                     }
                 }
 
                 AwareSensor.SensorBroadcastReceiver.SENSOR_STOP_ALL -> {
+                    logd("Stopping sensor.")
                     stopService(context)
                 }
             }
@@ -226,8 +234,9 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         override fun onReceive(context: Context?, intent: Intent?) {
             context ?: return
 
-            when (intent?.action) {
+            logd("Accelerometer broadcast received. action: " + intent?.action)
 
+            when (intent?.action) {
                 Accelerometer.ACTION_AWARE_ACCELEROMETER_START -> {
                     startService(context)
                 }
