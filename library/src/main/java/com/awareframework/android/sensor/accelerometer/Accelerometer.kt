@@ -100,6 +100,11 @@ class Accelerometer private constructor(
          */
         fun setDatabaseType(type: Engine.DatabaseType) = apply { config.dbType = type }
 
+        /**
+         * @param path path of the database.
+         */
+        fun setDatabasePath(path: String) = apply { config.dbPath = path }
+
         private val config: AccelerometerConfig = AccelerometerConfig()
 
         /**
