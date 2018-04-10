@@ -58,7 +58,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     private lateinit var accelerometerSpecificReceiver: AccelerometerSpecificReceiver
 
-    private var lastValues: Array<Float>? = null
+    private var lastValues: Array<Float> = arrayOf(0f, 0f, 0f)
     private var lastTimestamp: Long = 0
     private var lastSavedAt: Long = 0
 
@@ -129,7 +129,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (event.timestamp < lastTimestamp + CONFIG.interval / 1000) {
+        if (event.timestamp - lastTimestamp < CONFIG.interval / 1000) {
             // skip this event
             return
         }
@@ -141,25 +141,28 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
                 && Math.abs(event.values[2] - lastValues!![2]) < CONFIG.threshold) {
             return
         }
-        lastValues = arrayOf(event.values[0], event.values[1], event.values[2])
+        lastValues.forEachIndexed { index, fl ->
+            lastValues[index] = event.values[index]
+        }
 
         val currentTime = System.currentTimeMillis()
-        val data = AccelerometerEvent()
-        data.timestamp = currentTime
-        data.eventTimestamp = event.timestamp
-        data.timezone = TimeZone.getDefault().rawOffset
-        data.deviceId = CONFIG.deviceId
-        data.x = event.values[0]
-        data.y = event.values[1]
-        data.z = event.values[2]
-        data.accuracy = event.accuracy
-        data.label = CONFIG.label
+        val data = AccelerometerEvent().apply {
+            timestamp = currentTime
+            eventTimestamp = event.timestamp
+            timezone = TimeZone.getDefault().rawOffset
+            deviceId = CONFIG.deviceId
+            x = event.values[0]
+            y = event.values[1]
+            z = event.values[2]
+            accuracy = event.accuracy
+            label = CONFIG.label
+        }
 
         CONFIG.sensorObserver?.onDataChanged("", data, null)
 
         dataBuffer.add(data)
 
-        if (currentTime < lastSavedAt + CONFIG.period * 60000) { // convert minute to ms
+        if (currentTime - lastSavedAt < CONFIG.period * 60000) { // convert minute to ms
             // not ready to save yet
             return
         }
@@ -222,9 +225,14 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
                     }
                 }
 
+                Accelerometer.ACTION_AWARE_ACCELEROMETER_STOP,
                 AwareSensor.SensorBroadcastReceiver.SENSOR_STOP_ALL -> {
                     logd("Stopping sensor.")
                     stopService(context)
+                }
+
+                Accelerometer.ACTION_AWARE_ACCELEROMETER_START -> {
+                    startService(context)
                 }
             }
         }
@@ -237,13 +245,6 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
             logd("Accelerometer broadcast received. action: " + intent?.action)
 
             when (intent?.action) {
-                Accelerometer.ACTION_AWARE_ACCELEROMETER_START -> {
-                    startService(context)
-                }
-
-                Accelerometer.ACTION_AWARE_ACCELEROMETER_STOP -> {
-                    stopService(context)
-                }
 
                 Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL -> {
                     AccelerometerSensor.CONFIG.label = intent.getStringExtra(Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL)
@@ -257,8 +258,8 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
         fun getIntentFilter() : IntentFilter {
             val intentFilter = IntentFilter()
-            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_START)
-            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_STOP)
+//            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_START)
+//            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_STOP)
             intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL)
             intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_SYNC)
 

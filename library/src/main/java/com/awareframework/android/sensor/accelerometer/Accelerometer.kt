@@ -26,6 +26,8 @@ class Accelerometer private constructor(
 ) : ISensorController {
 
     companion object {
+        const val TAG = "com.aware.accelerometer"
+
         const val ACTION_AWARE_ACCELEROMETER_START = "com.aware.android.sensor.accelerometer.SENSOR_START"
         const val ACTION_AWARE_ACCELEROMETER_STOP = "com.aware.android.sensor.accelerometer.SENSOR_STOP"
         const val ACTION_AWARE_ACCELEROMETER_LABEL = "com.aware.android.sensor.accelerometer.SET_LABEL"
@@ -33,8 +35,6 @@ class Accelerometer private constructor(
 
         val defaultConfig: AccelerometerConfig = AccelerometerConfig()
     }
-
-    internal val TAG = "com.aware.accelerometer"
 
     var config: AccelerometerConfig = config
         private set
