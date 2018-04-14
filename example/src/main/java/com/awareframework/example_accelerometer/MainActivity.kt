@@ -1,6 +1,8 @@
 package com.awareframework.example_accelerometer
 
 import android.Manifest
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.support.v4.content.ContextCompat
 import com.awareframework.android.core.db.Engine
 import com.awareframework.android.core.manager.DbSyncManager
 import com.awareframework.android.sensor.accelerometer.Accelerometer
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,11 +41,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startSensors() {
+        val prefs = getSharedPreferences("deviceId", Context.MODE_PRIVATE)
+        val deviceId = prefs.getString("deviceId", UUID.randomUUID().toString())
+        prefs.edit().putString("deviceId", deviceId).apply()
+
         accelerometer = Accelerometer.Builder(this)
                 .setDebug(true)
                 .setDatabaseType(Engine.DatabaseType.ROOM)
                 .setDatabasePath("database-name")
-                .setDatabaseHost("http://100.70.109.77:3000/insert")
+                .setDatabaseHost("https://node.awareframework.com/insert")
+                .setDeviceId(deviceId)
                 .build()
         syncManager = DbSyncManager.Builder(this)
                 .setDebug(true)

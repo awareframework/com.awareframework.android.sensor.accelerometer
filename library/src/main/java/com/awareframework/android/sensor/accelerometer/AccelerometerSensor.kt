@@ -247,7 +247,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
             when (intent?.action) {
 
                 Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL -> {
-                    AccelerometerSensor.CONFIG.label = intent.getStringExtra(Accelerometer.ACTION_AWARE_ACCELEROMETER_LABEL)
+                    AccelerometerSensor.CONFIG.label = intent.getStringExtra(Accelerometer.EXTRA_AWARE_ACCELEROMETER_LABEL)
                 }
 
                 Accelerometer.ACTION_AWARE_ACCELEROMETER_SYNC -> {

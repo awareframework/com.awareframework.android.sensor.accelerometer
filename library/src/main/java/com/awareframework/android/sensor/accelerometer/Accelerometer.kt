@@ -33,6 +33,8 @@ class Accelerometer private constructor(
         const val ACTION_AWARE_ACCELEROMETER_LABEL = "com.aware.android.sensor.accelerometer.SET_LABEL"
         const val ACTION_AWARE_ACCELEROMETER_SYNC = "com.aware.android.sensor.accelerometer.SYNC"
 
+        const val EXTRA_AWARE_ACCELEROMETER_LABEL = "label"
+
         val defaultConfig: AccelerometerConfig = AccelerometerConfig()
     }
 
@@ -123,10 +125,10 @@ class Accelerometer private constructor(
          */
         fun setSensorObserver(sensorObserver: SensorObserver) = apply { config.sensorObserver = sensorObserver }
 
-//        /**
-//         * @param deviceId id of the device that will be associated with the events and the sensor. (default = "")
-//         */
-//        fun setDeviceId(deviceId: String) = apply { CONFIG.deviceId = deviceId }
+        /**
+         * @param deviceId id of the device that will be associated with the events and the sensor. (default = "")
+         */
+        fun setDeviceId(deviceId: String) = apply { config.deviceId = deviceId }
 
         /**
          * @param wakeLock enable/disable wakelock, permissions needs to be handled by the client.
