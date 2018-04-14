@@ -43,7 +43,7 @@ A builder class for building an instance of an accelerometer controller.
 
 + `setDebug(debug: Boolean)`: enable/disable logging to `Logcat`. (default = false)
 
-+ `setDatabaseHost(host: String)`: Which db engine to use for saving data. (default = NONE)
++ `setDatabaseHost(host: String)`: host for syncing the database. (default = null)
 
 + `setDatabaseEncryptionKey(key: String)`: Encryption key for the database. (default = no encryption)
 
