@@ -21,8 +21,13 @@ import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent
 import java.util.TimeZone
 import kotlin.collections.ArrayList
 
-private fun logd(msg: String) { if (AccelerometerSensor.CONFIG.debug) Log.d(AccelerometerSensor.TAG, msg) }
-private fun logw(msg: String) { Log.w(AccelerometerSensor.TAG, msg) }
+private fun logd(msg: String) {
+    if (AccelerometerSensor.CONFIG.debug) Log.d(AccelerometerSensor.TAG, msg)
+}
+
+private fun logw(msg: String) {
+    Log.w(AccelerometerSensor.TAG, msg)
+}
 
 /**
  * Implementation of Aware accelerometer in kotlin as a standalone service.
@@ -103,7 +108,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         } else {
             saveAccelerometerDevice(mAccelerometer)
 
-            val samplingPeriodUs = if(CONFIG.interval > 0) 1000000 / CONFIG.interval else 0
+            val samplingPeriodUs = if (CONFIG.interval > 0) 1000000 / CONFIG.interval else 0
             mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs, sensorHandler)
             lastSavedAt = System.currentTimeMillis()
 
@@ -129,23 +134,23 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (event.timestamp - lastTimestamp < CONFIG.interval / 1000) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastTimestamp < (900.0 / CONFIG.interval)) {
             // skip this event
             return
         }
-        lastTimestamp = event.timestamp
+        lastTimestamp = currentTime
 
-        if (lastValues != null && CONFIG.threshold > 0
-                && Math.abs(event.values[0] - lastValues!![0]) < CONFIG.threshold
-                && Math.abs(event.values[1] - lastValues!![1]) < CONFIG.threshold
-                && Math.abs(event.values[2] - lastValues!![2]) < CONFIG.threshold) {
+        if (CONFIG.threshold > 0
+                && Math.abs(event.values[0] - lastValues[0]) < CONFIG.threshold
+                && Math.abs(event.values[1] - lastValues[1]) < CONFIG.threshold
+                && Math.abs(event.values[2] - lastValues[2]) < CONFIG.threshold) {
             return
         }
-        lastValues.forEachIndexed { index, fl ->
+        lastValues.forEachIndexed { index, _ ->
             lastValues[index] = event.values[index]
         }
 
-        val currentTime = System.currentTimeMillis()
         val data = AccelerometerEvent().apply {
             timestamp = currentTime
             eventTimestamp = event.timestamp
@@ -187,6 +192,8 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
     override fun onSync(intent: Intent?) {
         dbEngine?.startSync(AccelerometerEvent.TABLE_NAME)
         dbEngine?.startSync(AccelerometerDevice.TABLE_NAME, DbSyncConfig(removeAfterSync = false))
+
+        sendBroadcast(Intent(Accelerometer.ACTION_AWARE_ACCELEROMETER_SYNC_SENT))
     }
 
     override fun onDestroy() {
@@ -256,7 +263,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
             }
         }
 
-        fun getIntentFilter() : IntentFilter {
+        fun getIntentFilter(): IntentFilter {
             val intentFilter = IntentFilter()
 //            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_START)
 //            intentFilter.addAction(Accelerometer.ACTION_AWARE_ACCELEROMETER_STOP)

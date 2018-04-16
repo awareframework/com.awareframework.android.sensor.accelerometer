@@ -32,6 +32,7 @@ class Accelerometer private constructor(
         const val ACTION_AWARE_ACCELEROMETER_STOP = "com.aware.android.sensor.accelerometer.SENSOR_STOP"
         const val ACTION_AWARE_ACCELEROMETER_LABEL = "com.aware.android.sensor.accelerometer.SET_LABEL"
         const val ACTION_AWARE_ACCELEROMETER_SYNC = "com.aware.android.sensor.accelerometer.SYNC"
+        const val ACTION_AWARE_ACCELEROMETER_SYNC_SENT = "com.aware.android.sensor.accelerometer.SYNC_SENT"
 
         const val EXTRA_AWARE_ACCELEROMETER_LABEL = "label"
 
@@ -124,6 +125,13 @@ class Accelerometer private constructor(
          * @param sensorObserver callback for live data updates.
          */
         fun setSensorObserver(sensorObserver: SensorObserver) = apply { config.sensorObserver = sensorObserver }
+        fun setSensorObserver(callback: (type: String, data: Any?, error: Any?) -> Unit) = apply {
+            config.sensorObserver = object : SensorObserver {
+                override fun onDataChanged(type: String, data: Any?, error: Any?) {
+                    callback(type, data, error)
+                }
+            }
+        }
 
         /**
          * @param deviceId id of the device that will be associated with the events and the sensor. (default = "")
