@@ -1,14 +1,19 @@
 package com.awareframework.android.sensor.accelerometer
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
-import com.awareframework.android.core.manager.DbSyncManager
 import com.awareframework.android.core.model.SensorObserver
-import junit.framework.TestCase.*
 import org.junit.After
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.lang.Math.abs
+import java.lang.Thread.sleep
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -18,74 +23,84 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SensorTest {
 
-    private var sensor: Accelerometer? = null
-    private var wasAbleToLogEvents = false
+    private lateinit var sensor: Accelerometer
+
+    private var interval: Int = 0
+
+    private val onDataReceived: SensorObserver = object : SensorObserver {
+        private var lastTimestamp: Long = System.currentTimeMillis()
+        private var dataCount: Int = 0
+
+        override fun onDataChanged(type: String, data: Any?, error: Any?) {
+            val currentTimestamp = System.currentTimeMillis()
+            if (currentTimestamp < lastTimestamp + 1000) {
+                dataCount++
+            } else {
+                interval = dataCount
+                dataCount = 0
+                lastTimestamp = currentTimestamp
+            }
+        }
+    }
 
     @Before
-    @Throws(Exception::class)
     fun init() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
 
-        sensor = Accelerometer.Builder(appContext).build()
-
         sensor = Accelerometer.Builder(appContext)
                 .setDebug(true)
-                .setSensorObserver(object: SensorObserver {
-                    override fun onDataChanged(type: String, data: Any?, error: Any?) {
-                        wasAbleToLogEvents = true
-                    }
-                })
+                .setSensorObserver(onDataReceived)
                 .build()
-
-        val syncManager = DbSyncManager.Builder(appContext)
-                .setDebug(true)
-                .setSyncInterval(0.1f)
-                .setBatteryChargingOnly(false)
-                .setWifiOnly(false)
-                .build()
-
-        syncManager.start()
     }
 
     @Test
-    @Throws(Exception::class)
-    fun testStopSensor() {
-        // can we run a sensor after stopping it
-        sensor!!.stop()
-        Thread.sleep(1000)
-        sensor!!.start()
-        Thread.sleep(1000)
+    fun testSensorCollectsDataAtGivenInterval() {
+        sensor.start()
+        val dataPoints = ArrayList<Int>()
 
-        sensor!!.stop()
-        Thread.sleep(1000)
+        // wait until interval determined
+        while (interval == 0) {
+            sleep(500)
+        }
 
-        wasAbleToLogEvents = false
-        Thread.sleep(1000)
-        assertFalse(wasAbleToLogEvents)
+        for (i in 0..10) {
+            dataPoints.add(interval)
+            sleep(1000)
+        }
 
+        val diff: Double = abs(sensor.config.interval.toDouble() - dataPoints.average())
 
-        wasAbleToLogEvents = false
-        sensor!!.start()
-        Thread.sleep(10000)
-        assertTrue(wasAbleToLogEvents)
-        sensor!!.stop()
+        assertTrue(diff < 1.0)
+
+        sensor.stop()
     }
 
     @Test
-    @Throws(Exception::class)
-    fun testStartSensor() {
-        // can we log any events?
-        wasAbleToLogEvents = false
+    fun testSensorSync() {
+        val appContext = InstrumentationRegistry.getTargetContext()
+        var syncReceived = false
 
-        sensor!!.start()
-        Thread.sleep(10000)
-        assertTrue(wasAbleToLogEvents)
-        sensor!!.stop()
+        sensor.start()
+        sleep(1000)
+
+
+        appContext.registerReceiver(object : BroadcastReceiver() {
+            override fun onReceive(p0: Context?, p1: Intent?) {
+                syncReceived = true
+            }
+        }, IntentFilter(Accelerometer.ACTION_AWARE_ACCELEROMETER_SYNC_SENT))
+
+        sensor.sync(true)
+        sleep(1000)
+
+        assertTrue(syncReceived)
+
+        sensor.stop()
     }
 
     @After
     fun tearDown() {
-        sensor = null
+        sensor.stop()
     }
 }
