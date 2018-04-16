@@ -7,7 +7,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # AWARE Accelerometer
 
-[![](https://jitpack.io/v/awareframework/com.aware.android.sensor.accelerometer.svg)](https://jitpack.io/#awareframework/com.aware.android.sensor.accelerometer)
+[![jitpack-badge](https://jitpack.io/v/awareframework/com.aware.android.sensor.accelerometer.svg)](https://jitpack.io/#awareframework/com.aware.android.sensor.accelerometer)
 
 The accelerometer measures the acceleration applied to the sensor built-in into the device, including the force of gravity. In other words, the force of gravity is always influencing the measured acceleration, thus when the device is sitting on a table, the accelerometer reads the acceleration of gravity: 9.81 m/s². Similarly, if the phone is in free-fall towards the ground, the accelerometer reads: 0 m/s².
 
