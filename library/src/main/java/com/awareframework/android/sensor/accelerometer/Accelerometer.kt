@@ -42,6 +42,10 @@ class Accelerometer private constructor(
     var config: AccelerometerConfig = config
         private set
 
+    var currentInterval: Int = AccelerometerSensor.currentInterval
+        get() = AccelerometerSensor.currentInterval
+        private set
+
     data class AccelerometerConfig(
             /**
              * Accelerometer interval in hertz per second: e.g.,

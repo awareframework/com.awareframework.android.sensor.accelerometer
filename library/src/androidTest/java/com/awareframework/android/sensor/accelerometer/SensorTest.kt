@@ -65,7 +65,7 @@ class SensorTest {
         }
 
         for (i in 0..10) {
-            dataPoints.add(interval)
+            dataPoints.add(sensor.currentInterval)
             sleep(1000)
         }
 

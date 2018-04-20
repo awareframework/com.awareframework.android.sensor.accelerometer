@@ -52,6 +52,11 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         internal fun stopService(context: Context) {
             context.stopService(Intent(context, AccelerometerSensor::class.java))
         }
+
+//        var instance: AccelerometerSensor? = null
+
+        var currentInterval: Int = 0
+            private set
     }
 
     private lateinit var mSensorManager: SensorManager
@@ -69,8 +74,13 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     private val dataBuffer = ArrayList<AccelerometerEvent>()
 
+    var dataCount: Int = 0
+    var lastDataCountTimestamp: Long = 0
+
     override fun onCreate() {
         super.onCreate()
+
+//        instance = this
 
         dbEngine = Engine.Builder(applicationContext)
                 .setPath(CONFIG.dbPath)
@@ -135,6 +145,13 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent) {
         val currentTime = System.currentTimeMillis()
+
+        if (currentTime - lastDataCountTimestamp >= 1000) {
+            currentInterval = dataCount
+            dataCount = 0
+            lastDataCountTimestamp = currentTime
+        }
+
         if (currentTime - lastTimestamp < (900.0 / CONFIG.interval)) {
             // skip this event
             return
@@ -166,6 +183,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
         CONFIG.sensorObserver?.onDataChanged("", data, null)
 
         dataBuffer.add(data)
+        dataCount++
 
         if (currentTime - lastSavedAt < CONFIG.period * 60000) { // convert minute to ms
             // not ready to save yet
@@ -210,6 +228,8 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
         applicationContext.unregisterReceiver(accelerometerSpecificReceiver)
 
+        currentInterval = 0
+//        instance = null
         logd("Accelerometer service terminated...")
     }
 

@@ -35,6 +35,8 @@ This is the main interaction controller with the sensor for the programmers.
 
 + `disable()`: disables the sensor in the configuration.
 
++ `currentInterval`: holds the current data interval rate for the running service in hertz. 
+
 ### Accelerometer.Builder
 
 A builder class for building an instance of an accelerometer controller.
