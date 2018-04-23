@@ -9,9 +9,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import com.awareframework.android.core.db.Engine
 import com.awareframework.android.core.manager.DbSyncManager
 import com.awareframework.android.sensor.accelerometer.Accelerometer
+import com.awareframework.android.sensor.accelerometer.model.AccelerometerEvent
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -51,7 +53,18 @@ class MainActivity : AppCompatActivity() {
                 .setDatabasePath("database-name")
                 .setDatabaseHost("https://node.awareframework.com/insert")
                 .setDeviceId(deviceId)
+                .setSensorObserver { type, data, error ->
+                    if (error != null) {
+                        Log.e("Test", error.toString())
+                    } else when (type) {
+                        AccelerometerEvent.TYPE -> {
+                            val event = data as AccelerometerEvent
+                            Log.d("Test", event.toJson())
+                        }
+                    }
+                }
                 .build()
+
         syncManager = DbSyncManager.Builder(this)
                 .setDebug(true)
                 .setBatteryChargingOnly(false)

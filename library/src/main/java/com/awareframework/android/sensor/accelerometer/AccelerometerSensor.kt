@@ -180,7 +180,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
             label = CONFIG.label
         }
 
-        CONFIG.sensorObserver?.onDataChanged("", data, null)
+        CONFIG.sensorObserver?.onDataChanged(AccelerometerEvent.TYPE, data, null)
 
         dataBuffer.add(data)
         dataCount++

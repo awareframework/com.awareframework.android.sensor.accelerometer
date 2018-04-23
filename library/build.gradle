@@ -11,7 +11,7 @@ project.ext.description = 'Aware accelerometer module'
 project.ext.url = 'https://github.com/awareframework/com.aware.android.sensor.accelerometer'
 
 dependencies {
-    api 'com.github.awareframework:com.aware.android.core:master-SNAPSHOT'
+    api 'com.github.awareframework:com.aware.android.core:0.1.1'
 
     // Support Dependencies
     implementation "com.android.support:appcompat-v7:$support_libs"

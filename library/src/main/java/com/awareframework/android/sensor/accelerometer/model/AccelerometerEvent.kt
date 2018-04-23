@@ -19,6 +19,7 @@ open class AccelerometerEvent(
 
     companion object {
         const val TABLE_NAME = "accelerometerEvent"
+        const val TYPE = "awareframework.accelerometerEvent"
     }
 
 }

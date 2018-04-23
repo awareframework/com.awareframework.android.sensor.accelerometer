@@ -113,6 +113,7 @@ allprojects {
     repositories {
         ...
         maven { url 'https://jitpack.io' }
+        maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
     }
 }
 ```
@@ -120,21 +121,42 @@ In your app `build.gradle` add the dependency to the accelerometer.
 
 ```gradle
 dependencies {
-    compile 'com.github.awareframework:com.aware.android.sensor.accelerometer:-SNAPSHOT'
+    compile 'com.github.awareframework:com.aware.android.sensor.accelerometer:master-SNAPSHOT'
 }
 ```
 
 In your source code:
 
 ```kotlin
-val accelerometer: Accelerometer = Accelerometer.Builder(applicationContext)
-        .setDebug(true)
-        .setDeviceID(UUID.randomUUID().toString())
-        .setSensorObserver(object : Accelerometer.SensorObserver {
-            override fun onAccelerometerChanged(data: AccelerometerEvent) {
-                Log.d("mSensorObserver", data.toString())
-            }
-        })
-        .build()
+val accelerometer = Accelerometer.Builder(this)
+                    .setDebug(true)
+                    .setDatabaseType(Engine.DatabaseType.ROOM)
+                    .setDatabasePath("database-name")
+                    .setDatabaseHost("https://node.awareframework.com/insert")
+                    .setDeviceId(deviceId)
+                    .setSensorObserver { type, data, error ->
+                        if (error != null) {
+                            Log.e("Test", error.toString())
+                        } else when (type) {
+                            AccelerometerEvent.TYPE -> {
+                                val event = data as AccelerometerEvent
+                                
+                                // your code here
+                                Log.d("Test", event.toJson())
+                            }
+                        }
+                    }
+                    .build()
+
 accelerometer.start()
+
+// to enable syncing to the db host automatically use
+val syncManager = DbSyncManager.Builder(this)
+                 .setDebug(true)
+                 .setBatteryChargingOnly(true)
+                 .setWifiOnly(true)
+                 .setSyncInterval(1f)
+                 .build()
+
+syncManager.start()
 ```
