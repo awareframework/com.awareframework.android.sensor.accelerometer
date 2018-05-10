@@ -3,13 +3,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
 
-project.group = 'com.github.awareframework'
-
-project.ext.name = 'Aware-Android-Accelerometer'
-project.ext.artifactId = "aware-accelerometer"
-project.ext.description = 'Aware accelerometer module'
-project.ext.url = 'https://github.com/awareframework/com.aware.android.sensor.accelerometer'
-
 dependencies {
     api 'com.github.awareframework:com.aware.android.core:0.1.1'
 
