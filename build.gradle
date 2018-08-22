@@ -1,13 +1,13 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.2.41'
+    ext.kotlin_version = '1.2.51'
     repositories {
         google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+        classpath 'com.android.tools.build:gradle:3.1.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
 
@@ -25,13 +25,17 @@ allprojects {
     }
 
     project.ext {
-        support_libs = (System.getenv("support_libs") as String ?: "27.1.0")
+        support_libs = (System.getenv("support_libs") as String ?: "27.1.1")
         version_code = (System.getenv("aware_revision") as Integer ?: 1)
         version_readable = (System.getenv("aware_label") as String ?: "0.0.1")
-        compile_sdk = (System.getenv("compile_sdk") as Integer ?: 26)
-        target_sdk = (System.getenv("target_sdk") as Integer ?: 25)
+        compile_sdk = (System.getenv("compile_sdk") as Integer ?: 27)
+        target_sdk = (System.getenv("target_sdk") as Integer ?: 27)
         minimum_sdk = (System.getenv("minimum_sdk") as Integer ?: 19) //Android 4.4+
         build_tools = (System.getenv("build_tools") ?: "27.0.3")
+        gson = System.getenv("gson") ?: "2.8.2"
+
+        support_test_runner = System.getenv("support_test_runner") ?: "1.0.2"
+        test_espresso_espresso_core = System.getenv("test_espresso_espresso_core") ?: "3.0.2"
     }
 }
 

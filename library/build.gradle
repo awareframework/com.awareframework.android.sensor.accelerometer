@@ -1,18 +1,25 @@
 apply plugin: 'com.android.library'
+
 apply plugin: 'kotlin-android'
+
 apply plugin: 'kotlin-android-extensions'
+
 apply plugin: 'com.github.dcendents.android-maven'
 
 dependencies {
-    api 'com.github.awareframework:com.aware.android.core:0.1.1'
+    api 'com.github.awareframework:com.aware.android.core:master-SNAPSHOT'
+    // api project(':core')
+
+    // Gson
+    implementation "com.google.code.gson:gson:$gson"
 
     // Support Dependencies
     implementation "com.android.support:appcompat-v7:$support_libs"
 
     // TEST
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestImplementation "com.android.support.test:runner:$support_test_runner"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$test_espresso_espresso_core"
 
     // KOTLIN
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -52,7 +59,7 @@ task sourcesJar(type: Jar) {
 }
 
 task javadoc(type: Javadoc) {
-    failOnError  false
+    failOnError false
     source = android.sourceSets.main.java.sourceFiles
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     classpath += configurations.compile

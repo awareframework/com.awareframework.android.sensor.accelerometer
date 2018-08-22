@@ -1,18 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.awareframework.android.sensor.accelerometer" >
-
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    package="com.awareframework.android.sensor.accelerometer">
 
     <application>
-        <service android:name="com.awareframework.android.sensor.accelerometer.AccelerometerSensor"/>
+        <service
+            android:name=".AccelerometerSensor"
+            android:exported="true" />
 
-        <receiver android:name=".AccelerometerSensor$AccelerometerBroadcastReceiver"  android:exported="true">
+        <receiver android:name=".AccelerometerSensor$AccelerometerSensorBroadcastReceiver"
+            android:exported="true">
             <intent-filter>
-                <action android:name="com.aware.android.sensor.accelerometer.SENSOR_START"/>
-                <action android:name="com.aware.android.sensor.accelerometer.SENSOR_STOP"/>
-                <action android:name="com.aware.android.sensor.accelerometer.SET_LABEL"/>
-                <action android:name="com.aware.android.sensor.SENSOR_START"/>
-                <action android:name="com.aware.android.sensor.SENSOR_STOP"/>
+                <action android:name="com.aware.android.sensor.accelerometer.SENSOR_START" />
+                <action android:name="com.aware.android.sensor.accelerometer.SENSOR_STOP" />
+                <action android:name="com.aware.android.sensor.SENSOR_START" />
+                <action android:name="com.aware.android.sensor.SENSOR_STOP" />
             </intent-filter>
         </receiver>
     </application>
