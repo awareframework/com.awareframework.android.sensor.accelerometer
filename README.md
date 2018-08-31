@@ -26,14 +26,14 @@ Class to hold the configuration of the sensor.
 + `interval: Int`: Data samples to collect per second. (default = 5)
 + `period: Float`: Period to save data in minutes. (default = 1)
 + `threshold: Double`: If set, do not record consecutive points if change in value is less than the set value.
-+ `enabled: Boolean` Sensor is enabled or not. (default = false)
-+ `debug: Boolean` enable/disable logging to `Logcat`. (default = false)
++ `enabled: Boolean` Sensor is enabled or not. (default = `false`)
++ `debug: Boolean` enable/disable logging to `Logcat`. (default = `false`)
 + `label: String` Label for the data. (default = "")
 + `deviceId: String` Id of the device that will be associated with the events and the sensor. (default = "")
-+ `dbEncryptionKey` Encryption key for the database. (default =String? = null)
++ `dbEncryptionKey` Encryption key for the database. (default = `null`)
 + `dbType: Engine` Which db engine to use for saving data. (default = `Engine.DatabaseType.NONE`)
 + `dbPath: String` Path of the database. (default = "aware_accelerometer")
-+ `dbHost: String` Host for syncing the database. (Defult = `null`)
++ `dbHost: String` Host for syncing the database. (default = `null`)
 
 ## Broadcasts
 
