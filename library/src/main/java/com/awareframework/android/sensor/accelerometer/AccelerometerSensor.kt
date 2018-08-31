@@ -155,6 +155,7 @@ class AccelerometerSensor : AwareSensor(), SensorEventListener {
 
         val device = AccelerometerDevice().apply {
             deviceId = CONFIG.deviceId
+            label = CONFIG.label
             timestamp = System.currentTimeMillis()
 
             maxRange = sensor.maximumRange
