@@ -7,7 +7,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
 
 dependencies {
-    api 'com.github.awareframework:com.aware.android.core:master-SNAPSHOT'
+    api 'com.github.awareframework:com.awareframework.android.core:master-SNAPSHOT'
     // api project(':core')
 
     // Gson
